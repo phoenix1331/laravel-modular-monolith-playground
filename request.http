@@ -50,3 +50,86 @@ Accept: text/html
 # Registration is disabled: users are created by club admins, so this returns 404.
 GET {{baseUrl}}/register
 Accept: text/html
+
+### Teams
+
+# List teams. Admins see every team in their club, workers only the teams they coach.
+GET {{baseUrl}}/teams
+Accept: text/html
+
+###
+
+# Create a team (admins only). worker_ids must be workers in the same club.
+POST {{baseUrl}}/teams
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "name": "U12 Lions",
+    "age_group": "U12",
+    "worker_ids": []
+}
+
+###
+
+# Show a team with its players and coaches. Another club's team id returns 404.
+GET {{baseUrl}}/teams/1
+Accept: text/html
+
+###
+
+# Update a team (admins only). Replaces the assigned coaches.
+PUT {{baseUrl}}/teams/1
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "name": "U12 Lionesses",
+    "age_group": "U12",
+    "worker_ids": []
+}
+
+###
+
+# Delete a team and its players (admins only).
+DELETE {{baseUrl}}/teams/1
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+### Players
+
+# Add a player to a team (admins only). Players are records, not logins.
+POST {{baseUrl}}/teams/1/players
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "first_name": "Sam",
+    "last_name": "Jones",
+    "date_of_birth": "2014-05-01",
+    "shirt_number": 7
+}
+
+###
+
+# Update a player (admins only).
+PUT {{baseUrl}}/players/1
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "first_name": "Sam",
+    "last_name": "Jones",
+    "shirt_number": 9
+}
+
+###
+
+# Remove a player (admins only).
+DELETE {{baseUrl}}/players/1
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}

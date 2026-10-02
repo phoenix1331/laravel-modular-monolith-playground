@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from '@lucide/vue';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Users } from '@lucide/vue';
 import { computed } from 'vue';
+import TeamController from '@/actions/App/Http/Controllers/Teams/TeamController';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
@@ -58,6 +59,9 @@ const mainNavItems = computed<NavItem[]>(() => [
         href: auth.value.home,
         icon: LayoutGrid,
     },
+    ...(auth.value.user.role === 'super_admin'
+        ? []
+        : [{ title: 'Teams', href: TeamController.index(), icon: Users }]),
 ]);
 
 const rightNavItems: NavItem[] = [

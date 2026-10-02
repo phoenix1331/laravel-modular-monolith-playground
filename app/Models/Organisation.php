@@ -36,4 +36,12 @@ class Organisation extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * @return HasMany<Team, $this>
+     */
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class);
+    }
 }

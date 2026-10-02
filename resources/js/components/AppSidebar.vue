@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { BookOpen, FolderGit2, LayoutGrid, Users } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import TeamController from '@/actions/App/Http/Controllers/Teams/TeamController';
 import {
     Sidebar,
     SidebarContent,
@@ -26,6 +27,10 @@ const mainNavItems = computed<NavItem[]>(() => [
         href: home.value,
         icon: LayoutGrid,
     },
+    // Club areas only. The super admin works on the platform, not inside a club
+    ...(page.props.auth.user.role === 'super_admin'
+        ? []
+        : [{ title: 'Teams', href: TeamController.index(), icon: Users }]),
 ]);
 
 const footerNavItems: NavItem[] = [
