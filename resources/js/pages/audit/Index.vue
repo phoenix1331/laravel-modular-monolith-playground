@@ -119,9 +119,7 @@ function display(value: unknown): string {
                 v-if="entries.prev_page_url"
                 as-child
             >
-                <Link :href="entries.prev_page_url" preserve-scroll
-                    >Newer</Link
-                >
+                <Link :href="entries.prev_page_url" preserve-scroll>Newer</Link>
             </Button>
             <span class="text-sm text-muted-foreground">
                 Page {{ entries.current_page }} of {{ entries.last_page }}
@@ -132,9 +130,7 @@ function display(value: unknown): string {
                 v-if="entries.next_page_url"
                 as-child
             >
-                <Link :href="entries.next_page_url" preserve-scroll
-                    >Older</Link
-                >
+                <Link :href="entries.next_page_url" preserve-scroll>Older</Link>
             </Button>
         </div>
     </div>

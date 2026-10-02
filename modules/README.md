@@ -16,6 +16,15 @@ modules/{Name}/
   {Name}ServiceProvider.php
 ```
 
+## Installing a module
+
+1. `{Name}Module.php` extends `App\Modules\ModuleDefinition`: key, name, hard and soft dependencies (by key, never by class)
+2. `{Name}ServiceProvider.php` extends `App\Modules\ModuleServiceProvider`: loads `Routes/web.php` into the club area and `Database/Migrations`
+3. Add the definition class to `config/modules.php`
+4. `php artisan modules:list` confirms it is installed
+
+A missing hard dependency or a dependency cycle stops the application booting with a message naming the modules involved.
+
 ## Rules
 
 | Rule                                                                                    | Enforced by                                                                         |
