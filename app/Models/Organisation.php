@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Laravel\Pennant\Contracts\FeatureScopeSerializeable;
 
 /**
  * A tenant: one grassroots club.
@@ -29,7 +30,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable(['name', 'slug'])]
 #[ObservedBy(AuditObserver::class)]
-class Organisation extends Model implements Auditable
+class Organisation extends Model implements Auditable, FeatureScopeSerializeable
 {
     /** @use HasFactory<OrganisationFactory> */
     use HasFactory;
@@ -48,6 +49,16 @@ class Organisation extends Model implements Auditable
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);
+    }
+
+    /**
+     * How Pennant stores this organisation in the features table scope
+     * column: `organisation|1` rather than the full class name, so rows stay
+     * readable and survive a class rename.
+     */
+    public function featureScopeSerialize(): string
+    {
+        return 'organisation|'.$this->getKey();
     }
 
     public function auditType(): string

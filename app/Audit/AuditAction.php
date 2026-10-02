@@ -16,6 +16,8 @@ enum AuditAction: string
     case Delete = 'delete';
     case Login = 'login';
     case Logout = 'logout';
+    case Enable = 'enable';
+    case Disable = 'disable';
 
     public function label(): string
     {
@@ -25,6 +27,8 @@ enum AuditAction: string
             self::Delete => 'Deleted',
             self::Login => 'Logged in',
             self::Logout => 'Logged out',
+            self::Enable => 'Enabled',
+            self::Disable => 'Disabled',
         };
     }
 }
