@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Modules\ModuleDefinition;
+use App\Modules\ModuleManager;
+use App\Tenancy\CurrentOrganisation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,7 +47,27 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'home' => $request->user()?->homeUrl(),
             ],
+            // Modules enabled for the signed-in user's club. The frontend builds
+            // navigation from this, so a disabled module never appears
+            'enabledModules' => fn () => $this->enabledModules(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * @return list<array{key: string, name: string}>
+     */
+    private function enabledModules(): array
+    {
+        $organisation = app(CurrentOrganisation::class)->get();
+
+        if ($organisation === null) {
+            return [];
+        }
+
+        return array_map(
+            fn (ModuleDefinition $module) => ['key' => $module->key(), 'name' => $module->name()],
+            app(ModuleManager::class)->enabledFor($organisation),
+        );
     }
 }

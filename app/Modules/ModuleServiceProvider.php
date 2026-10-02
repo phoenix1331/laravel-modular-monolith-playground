@@ -24,7 +24,9 @@ use ReflectionClass;
  *     }
  *
  * Conventions it relies on, relative to the module folder:
- * - `Routes/web.php` is loaded inside the club area (signed in, admin or worker)
+ * - `Routes/web.php` is loaded inside the club area (signed in, admin or
+ *   worker) behind `module:{key}`, so every route 404s for clubs that do
+ *   not have the module enabled
  * - `Database/Migrations` is added to the migrator
  * - `Policies/{Model}Policy` is found by Laravel's policy discovery for
  *   `Models/{Model}`, so no policy registration is needed
@@ -43,13 +45,14 @@ abstract class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
-     * Middleware applied to every route in the module's Routes/web.php.
+     * Middleware applied to every route in the module's Routes/web.php. Add
+     * to this list if a module needs more; keep `module:{key}` in it.
      *
      * @return list<string>
      */
     protected function routeMiddleware(): array
     {
-        return ['web', 'auth', 'role:admin,worker'];
+        return ['web', 'auth', 'role:admin,worker', 'module:'.$this->definition()->key()];
     }
 
     protected function modulePath(string $path = ''): string
