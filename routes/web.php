@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Audit\AuditLogController;
+use App\Http\Controllers\Platform\OrganisationController;
+use App\Http\Controllers\Platform\OrganisationModuleController;
 use App\Http\Controllers\Teams\PlayerController;
 use App\Http\Controllers\Teams\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +25,9 @@ Route::middleware(['auth', 'role:admin,worker'])->group(function () {
 
 // Platform area: the super admin only, across every organisation
 Route::middleware(['auth', 'role:super_admin'])->prefix('platform')->name('platform.')->group(function () {
-    Route::inertia('/', 'platform/Dashboard')->name('dashboard');
+    Route::get('/', [OrganisationController::class, 'index'])->name('dashboard');
+    Route::get('organisations/{organisation}', [OrganisationController::class, 'show'])->name('organisations.show');
+    Route::put('organisations/{organisation}/modules/{module}', [OrganisationModuleController::class, 'update'])->name('organisations.modules.update');
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 });
 

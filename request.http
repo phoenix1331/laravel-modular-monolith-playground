@@ -145,3 +145,39 @@ Accept: text/html
 # Platform audit trail across every club (super admin only).
 GET {{baseUrl}}/platform/audit
 Accept: text/html
+
+### Platform (super admin)
+
+# Every organisation with user, team and enabled module counts.
+GET {{baseUrl}}/platform
+Accept: text/html
+
+###
+
+# One organisation's installed modules, with dependency state and blocked reasons.
+GET {{baseUrl}}/platform/organisations/1
+Accept: text/html
+
+###
+
+# Enable a module for a club. Fails with a "module" error if a hard dependency is off.
+PUT {{baseUrl}}/platform/organisations/1/modules/fixtures
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "enabled": true
+}
+
+###
+
+# Disable a module for a club. Fails while an enabled module hard-depends on it. Data is kept.
+PUT {{baseUrl}}/platform/organisations/1/modules/fixtures
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "enabled": false
+}
