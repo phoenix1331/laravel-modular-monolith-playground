@@ -2,7 +2,7 @@
 
 EXEC = docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test lint lint-check artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -40,6 +40,12 @@ fresh: ## Drop all tables, migrate and seed
 
 test: ## Run the test suite
 	@$(EXEC) php artisan test
+
+lint: ## Fix code style with Pint
+	@$(EXEC) ./vendor/bin/pint
+
+lint-check: ## Check code style with Pint without changing files
+	@$(EXEC) ./vendor/bin/pint --test
 
 artisan: ## Run an artisan command, e.g. make artisan cmd="route:list"
 	@$(EXEC) php artisan $(cmd)
