@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Audit\AuditAction;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use LogicException;
 
 /**
@@ -28,7 +28,7 @@ use LogicException;
  * @property string|null $ip_address
  * @property string|null $user_agent
  * @property string|null $request_route
- * @property Carbon $created_at
+ * @property CarbonImmutable $created_at
  * @property-read User|null $user
  * @property-read Organisation|null $organisation
  */

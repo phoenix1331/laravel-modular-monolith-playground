@@ -8,13 +8,13 @@ use App\Audit\Auditable;
 use App\Audit\AuditAction;
 use App\Audit\AuditObserver;
 use App\Tenancy\BelongsToOrganisation;
+use Carbon\CarbonImmutable;
 use Database\Factories\PlayerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * A player on a team. A record managed by club admins, never a login.
@@ -24,10 +24,10 @@ use Illuminate\Support\Carbon;
  * @property int $team_id
  * @property string $first_name
  * @property string $last_name
- * @property Carbon|null $date_of_birth
+ * @property CarbonImmutable|null $date_of_birth
  * @property int|null $shirt_number
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $full_name
  */
 #[Fillable(['first_name', 'last_name', 'date_of_birth', 'shirt_number'])]

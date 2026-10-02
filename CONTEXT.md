@@ -39,6 +39,18 @@ Primary audience is people learning how to draw and enforce module boundaries in
 | `docker/entrypoint.sh`        | Installs `vendor/` and `node_modules/` on first boot                                                                                                              |
 | `docs/`                       | GitHub Pages site and the rendered module graph                                                                                                                   |
 
+## Seeded logins
+
+All passwords are `password`. `make fresh` rebuilds the same data every time (Faker seeded with 1331).
+
+| Login | Role | Club |
+|---|---|---|
+| `super@platform.test` | Super admin | None |
+| `admin@riverside.test`, `coach1-3@riverside.test` | Admin, workers | Riverside Juniors FC (4 teams) |
+| `admin@dockside.test`, `coach1-2@dockside.test` | Admin, workers | Dockside Rovers (2 teams) |
+| `admin@hillcrest.test`, `coach1-2@hillcrest.test` | Admin, workers | Hillcrest Ladies (2 teams) |
+| `admin@valley.test`, `coach1-2@valley.test` | Admin, workers | Valley Vets Walking Football (2 teams) |
+
 ## Runtime
 
 | Service      | Container port | Host port                | Notes                                      |
