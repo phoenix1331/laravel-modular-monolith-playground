@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:8000
+
+# Web routes are protected by CSRF. Before any POST:
+#   1. Run "Fetch the login page" below. Laravel sets an XSRF-TOKEN cookie.
+#   2. Copy that cookie's value, URL-decoded (%3D becomes =), into @xsrf.
+# Both VS Code REST Client and JetBrains HTTP Client keep the session cookie
+# between requests, so later requests run as the signed-in user.
+@xsrf = paste-xsrf-token-here
+
+### Authentication
+
+# Fetch the login page. Sets the XSRF-TOKEN and session cookies.
+GET {{baseUrl}}/login
+Accept: text/html
+
+###
+
+# Log in as a club admin. Redirects to /dashboard.
+POST {{baseUrl}}/login
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "email": "test@example.com",
+    "password": "password"
+}
+
+###
+
+# Log out. Ends the session.
+POST {{baseUrl}}/logout
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+### Role areas
+
+# Club dashboard. 200 for admins and workers, 403 for the super admin, redirect to /login for guests.
+GET {{baseUrl}}/dashboard
+Accept: text/html
+
+###
+
+# Platform dashboard. 200 for the super admin only, 403 for club users.
+GET {{baseUrl}}/platform
+Accept: text/html
+
+###
+
+# Registration is disabled: users are created by club admins, so this returns 404.
+GET {{baseUrl}}/register
+Accept: text/html

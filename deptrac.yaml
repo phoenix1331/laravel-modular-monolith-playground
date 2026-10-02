@@ -18,35 +18,35 @@
 #   3. Never list another module's internals layer. That is the boundary.
 
 deptrac:
-  paths:
-    - ./app
-    - ./modules
+    paths:
+        - ./app
+        - ./modules
 
-  layers:
-    # Core: organisations, users, roles, teams, players, feature flags, the
-    # module registry and the audit log. Always installed, always on.
-    #
-    # Layers are collected by namespace, not directory. A directory regex such
-    # as `app/.*` is matched against absolute paths, so inside a container
-    # mounted at /app it would also swallow /app/modules/... into Core.
-    - name: Core
-      collectors:
-        - type: classLike
-          value: ^App\\.*
+    layers:
+        # Core: organisations, users, roles, teams, players, feature flags, the
+        # module registry and the audit log. Always installed, always on.
+        #
+        # Layers are collected by namespace, not directory. A directory regex such
+        # as `app/.*` is matched against absolute paths, so inside a container
+        # mounted at /app it would also swallow /app/modules/... into Core.
+        - name: Core
+          collectors:
+              - type: classLike
+                value: ^App\\.*
 
-    # Framework: vendor code the app is built on. Listing namespaces here,
-    # rather than ignoring vendor entirely, means a new package has to be
-    # classified on purpose before anything can depend on it.
-    - name: Framework
-      collectors:
-        - type: classLike
-          value: ^(Illuminate|Laravel|Inertia|Symfony|Carbon|Psr)\\.*
+        # Framework: vendor code the app is built on. Listing namespaces here,
+        # rather than ignoring vendor entirely, means a new package has to be
+        # classified on purpose before anything can depend on it.
+        - name: Framework
+          collectors:
+              - type: classLike
+                value: ^(Illuminate|Laravel|Inertia|Symfony|Carbon|Psr)\\.*
 
-  ruleset:
-    # Core depends on the framework and nothing else. It never names a module
-    # layer, which is what lets any module be deleted without touching Core.
-    Core:
-      - Framework
+    ruleset:
+        # Core depends on the framework and nothing else. It never names a module
+        # layer, which is what lets any module be deleted without touching Core.
+        Core:
+            - Framework
 
-    # Framework sits outside `paths`, so it is never analysed as a source.
-    Framework: ~
+        # Framework sits outside `paths`, so it is never analysed as a source.
+        Framework: ~

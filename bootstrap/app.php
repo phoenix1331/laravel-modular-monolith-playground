@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +20,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->alias([
+            'role' => EnsureUserHasRole::class,
+        ]);
+
+        // Signed-in users visiting a guest page (e.g. /login) go to their own area
+        $middleware->redirectUsersTo(function (Request $request): string {
+            /** @var User $user */
+            $user = $request->user();
+
+            return $user->homeUrl();
+        });
 
         $middleware->web(append: [
             HandleAppearance::class,

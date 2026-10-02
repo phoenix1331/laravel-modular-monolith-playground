@@ -87,6 +87,15 @@ class User extends Authenticatable
         return $this->belongsTo(Organisation::class);
     }
 
+    /**
+     * Where this user lands after logging in, or when visiting a guest-only
+     * page while signed in.
+     */
+    public function homeUrl(): string
+    {
+        return $this->isSuperAdmin() ? route('platform.dashboard') : route('dashboard');
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === Role::SuperAdmin;

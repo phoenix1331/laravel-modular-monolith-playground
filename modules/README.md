@@ -18,8 +18,8 @@ modules/{Name}/
 
 ## Rules
 
-| Rule | Enforced by |
-|---|---|
-| Only `Contracts/` is public. Other modules never reference anything else in this folder | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`) |
-| Every class belongs to a layer | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`) |
-| Installed is not enabled | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled |
+| Rule                                                                                    | Enforced by                                                                         |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Only `Contracts/` is public. Other modules never reference anything else in this folder | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`)                   |
+| Every class belongs to a layer                                                          | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`)                       |
+| Installed is not enabled                                                                | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled |

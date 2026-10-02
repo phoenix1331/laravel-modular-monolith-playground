@@ -6,8 +6,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Club area: admins and workers, always inside their own organisation
+Route::middleware(['auth', 'role:admin,worker'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+});
+
+// Platform area: the super admin only, across every organisation
+Route::middleware(['auth', 'role:super_admin'])->prefix('platform')->name('platform.')->group(function () {
+    Route::inertia('/', 'platform/Dashboard')->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
