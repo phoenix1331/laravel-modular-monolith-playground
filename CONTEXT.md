@@ -20,7 +20,8 @@ Primary audience is people learning how to draw and enforce module boundaries in
 | Framework | Laravel 13, PHP 8.4 |
 | Runtime | Docker, FrankenPHP (`dunglas/frankenphp:php8.4`) |
 | Database | MySQL 8.4 |
-| Frontend | Inertia + Vue 3 in plain JavaScript, Tailwind 4, Vite |
+| Frontend | Laravel Vue starter kit: Inertia, Vue 3, TypeScript, Tailwind 4, Vite |
+| Auth | Laravel Fortify (via the starter kit) |
 | Feature flags | Laravel Pennant, database driver, scoped to `Organisation` |
 | Boundaries | Deptrac, Pest arch tests, `eslint-plugin-boundaries` |
 | Tests | Pest |
@@ -32,8 +33,9 @@ Primary audience is people learning how to draw and enforce module boundaries in
 | `app/` | Core (`App\`). Never references `Modules\` |
 | `modules/{Name}/` | One folder per module (`Modules\{Name}\`): `Contracts/`, `Database/`, `Http/`, `Models/`, `Policies/`, `Routes/`, `{Name}Module.php`, `{Name}ServiceProvider.php` |
 | `config/modules.php` | Installed modules list. Removing a line uninstalls a module |
-| `resources/js/modules/{key}/` | Module frontend. `index.js` is the only public entry |
+| `resources/js/modules/{key}/` | Module frontend. `index.ts` is the only public entry |
 | `deptrac.yaml` | PHP layer definitions and allowed dependencies |
+| `.husky/` | Tracked git hooks: `commit-msg` (lowercase conventional commits), `pre-commit` (Pint + osv-scanner). Activated by `npm install` via the `prepare` script |
 | `docker/entrypoint.sh` | Installs `vendor/` and `node_modules/` on first boot |
 | `docs/` | GitHub Pages site and the rendered module graph |
 
@@ -54,7 +56,7 @@ Primary audience is people learning how to draw and enforce module boundaries in
 
 | Decision | Why |
 |---|---|
-| Plain JavaScript, not TypeScript | Keeps the frontend readable for the tutorial audience. The Laravel Vue starter kit is TypeScript, so Inertia + Vue are wired up manually |
+| Laravel Vue starter kit (TypeScript) | Ships auth pages, layouts and tooling out of the box, so effort goes into module boundaries rather than auth UI. TypeScript is accepted as part of the kit |
 | Single-database tenancy | `organisation_id` column + `BelongsToOrganisation` global scope. Super admin bypasses explicitly, never implicitly |
 | Module tables survive disabling | Toggling a flag off hides the module (404 + no nav) but keeps data, so toggling back on restores it |
 | Disabled module routes return 404 | A disabled module should look like it does not exist, not like a permission error |
