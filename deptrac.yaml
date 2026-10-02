@@ -1,0 +1,52 @@
+# Deptrac: module boundaries enforced by static analysis
+#
+# Deptrac reads every class under `paths`, sorts each one into a layer using
+# the `collectors`, then checks every dependency (use statements, type hints,
+# `new`, static calls, attributes) against the `ruleset`. A dependency from
+# layer A to layer B is only allowed if B is listed under A.
+#
+# Run it with `make deptrac`. It runs with --fail-on-uncovered, so a
+# dependency on a class that belongs to no layer fails the build instead of
+# slipping through unchecked.
+#
+# How a module plugs in (see modules/README.md):
+#   1. Add two layers per module: `{Name}` for internals and
+#      `{Name}Contracts` for its public Contracts/ folder.
+#   2. Add a ruleset entry for each. Internals may use Core, Framework, their
+#      own contracts and the contracts of declared dependencies. Contracts may
+#      use Framework only, so the public surface stays thin.
+#   3. Never list another module's internals layer. That is the boundary.
+
+deptrac:
+  paths:
+    - ./app
+    - ./modules
+
+  layers:
+    # Core: organisations, users, roles, teams, players, feature flags, the
+    # module registry and the audit log. Always installed, always on.
+    #
+    # Layers are collected by namespace, not directory. A directory regex such
+    # as `app/.*` is matched against absolute paths, so inside a container
+    # mounted at /app it would also swallow /app/modules/... into Core.
+    - name: Core
+      collectors:
+        - type: classLike
+          value: ^App\\.*
+
+    # Framework: vendor code the app is built on. Listing namespaces here,
+    # rather than ignoring vendor entirely, means a new package has to be
+    # classified on purpose before anything can depend on it.
+    - name: Framework
+      collectors:
+        - type: classLike
+          value: ^(Illuminate|Laravel|Inertia|Symfony|Carbon|Psr)\\.*
+
+  ruleset:
+    # Core depends on the framework and nothing else. It never names a module
+    # layer, which is what lets any module be deleted without touching Core.
+    Core:
+      - Framework
+
+    # Framework sits outside `paths`, so it is never analysed as a source.
+    Framework: ~

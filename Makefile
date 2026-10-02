@@ -2,7 +2,7 @@
 
 EXEC = docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test lint lint-check stan types artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test lint lint-check stan types deptrac artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -52,6 +52,10 @@ stan: ## Run PHPStan (Larastan) static analysis
 
 types: ## Type check Vue and TypeScript with vue-tsc
 	@$(EXEC) npm run types:check
+
+deptrac: ## Check module boundaries (fails on violations, uncovered dependencies and classes outside any layer)
+	@$(EXEC) ./vendor/bin/deptrac analyse --fail-on-uncovered --no-progress
+	@$(EXEC) ./vendor/bin/deptrac debug:unassigned
 
 artisan: ## Run an artisan command, e.g. make artisan cmd="route:list"
 	@$(EXEC) php artisan $(cmd)
