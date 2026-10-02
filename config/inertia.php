@@ -39,6 +39,9 @@ return [
 
         'paths' => [
             resource_path('js/pages'),
+            // Module pages are named by their path under js/modules, e.g.
+            // `fixtures/pages/Index` for js/modules/fixtures/pages/Index.vue
+            resource_path('js/modules'),
         ],
 
         'extensions' => [

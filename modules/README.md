@@ -23,6 +23,9 @@ modules/{Name}/
 3. Add the definition class to `config/modules.php`
 4. `php artisan modules:list` confirms it is installed
 
+5. Frontend: `resources/js/modules/{key}/index.ts` default-exports `defineModule({ key, navigation })` from `@/lib/modules`. Its links appear only while the module is enabled for the club
+6. Pages go in `resources/js/modules/{key}/pages/` and are rendered by their path under `resources/js/modules`, e.g. `Inertia::render('fixtures/pages/Index')`
+
 A missing hard dependency or a dependency cycle stops the application booting with a message naming the modules involved.
 
 ## Rules
