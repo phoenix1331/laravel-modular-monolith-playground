@@ -12,3 +12,8 @@ parameters:
         - routes/
 
     level: 7
+
+    ignoreErrors:
+        # Remove once the first tenant-owned model uses the trait; PHPStan flags unmatched ignores
+        - identifier: trait.unused
+          path: app/Tenancy/BelongsToOrganisation.php
