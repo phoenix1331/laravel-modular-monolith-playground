@@ -2,7 +2,7 @@
 
 EXEC = docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test lint lint-check artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test lint lint-check stan types artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -46,6 +46,12 @@ lint: ## Fix code style with Pint
 
 lint-check: ## Check code style with Pint without changing files
 	@$(EXEC) ./vendor/bin/pint --test
+
+stan: ## Run PHPStan (Larastan) static analysis
+	@$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G
+
+types: ## Type check Vue and TypeScript with vue-tsc
+	@$(EXEC) npm run types:check
 
 artisan: ## Run an artisan command, e.g. make artisan cmd="route:list"
 	@$(EXEC) php artisan $(cmd)
