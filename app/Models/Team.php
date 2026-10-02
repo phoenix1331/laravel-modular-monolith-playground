@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Audit\Auditable;
+use App\Audit\AuditAction;
+use App\Audit\AuditObserver;
 use App\Tenancy\BelongsToOrganisation;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -24,7 +28,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'age_group'])]
-class Team extends Model
+#[ObservedBy(AuditObserver::class)]
+class Team extends Model implements Auditable
 {
     use BelongsToOrganisation;
 
@@ -47,5 +52,15 @@ class Team extends Model
     public function workers(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function auditType(): string
+    {
+        return 'team';
+    }
+
+    public function auditActions(): array
+    {
+        return [AuditAction::Create, AuditAction::Update, AuditAction::Delete];
     }
 }

@@ -133,3 +133,15 @@ X-XSRF-TOKEN: {{xsrf}}
 DELETE {{baseUrl}}/players/1
 Accept: application/json
 X-XSRF-TOKEN: {{xsrf}}
+
+### Audit log
+
+# Club audit trail (admins only). Changes to teams, players and users are recorded automatically by the AuditObserver.
+GET {{baseUrl}}/audit
+Accept: text/html
+
+###
+
+# Platform audit trail across every club (super admin only).
+GET {{baseUrl}}/platform/audit
+Accept: text/html

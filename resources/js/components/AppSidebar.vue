@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, Users } from '@lucide/vue';
+import { BookOpen, FolderGit2 } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import TeamController from '@/actions/App/Http/Controllers/Teams/TeamController';
+import { useMainNav } from '@/composables/useMainNav';
 import {
     Sidebar,
     SidebarContent,
@@ -21,17 +21,7 @@ import type { NavItem } from '@/types';
 const page = usePage();
 const home = computed(() => page.props.auth.home);
 
-const mainNavItems = computed<NavItem[]>(() => [
-    {
-        title: 'Dashboard',
-        href: home.value,
-        icon: LayoutGrid,
-    },
-    // Club areas only. The super admin works on the platform, not inside a club
-    ...(page.props.auth.user.role === 'super_admin'
-        ? []
-        : [{ title: 'Teams', href: TeamController.index(), icon: Users }]),
-]);
+const mainNavItems = useMainNav();
 
 const footerNavItems: NavItem[] = [
     {

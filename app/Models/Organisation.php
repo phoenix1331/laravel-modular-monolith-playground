@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Audit\Auditable;
+use App\Audit\AuditAction;
+use App\Audit\AuditObserver;
 use Database\Factories\OrganisationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,7 +28,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'slug'])]
-class Organisation extends Model
+#[ObservedBy(AuditObserver::class)]
+class Organisation extends Model implements Auditable
 {
     /** @use HasFactory<OrganisationFactory> */
     use HasFactory;
@@ -43,5 +48,15 @@ class Organisation extends Model
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);
+    }
+
+    public function auditType(): string
+    {
+        return 'organisation';
+    }
+
+    public function auditActions(): array
+    {
+        return [AuditAction::Create, AuditAction::Update, AuditAction::Delete];
     }
 }

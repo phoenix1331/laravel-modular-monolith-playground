@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Audit\Auditable;
+use App\Audit\AuditAction;
+use App\Audit\AuditObserver;
 use App\Enums\Role;
 use App\Exceptions\InvalidUserOrganisation;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,7 +35,8 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+#[ObservedBy(AuditObserver::class)]
+class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -120,5 +125,15 @@ class User extends Authenticatable
     public function isWorker(): bool
     {
         return $this->role === Role::Worker;
+    }
+
+    public function auditType(): string
+    {
+        return 'user';
+    }
+
+    public function auditActions(): array
+    {
+        return [AuditAction::Create, AuditAction::Update, AuditAction::Delete];
     }
 }

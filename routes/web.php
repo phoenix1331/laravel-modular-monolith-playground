@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Audit\AuditLogController;
 use App\Http\Controllers\Teams\PlayerController;
 use App\Http\Controllers\Teams\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -16,11 +17,14 @@ Route::middleware(['auth', 'role:admin,worker'])->group(function () {
     Route::resource('teams.players', PlayerController::class)
         ->shallow()
         ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 });
 
 // Platform area: the super admin only, across every organisation
 Route::middleware(['auth', 'role:super_admin'])->prefix('platform')->name('platform.')->group(function () {
     Route::inertia('/', 'platform/Dashboard')->name('dashboard');
+    Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 });
 
 require __DIR__.'/settings.php';

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Audit\Auditable;
+use App\Audit\AuditAction;
+use App\Audit\AuditObserver;
 use App\Tenancy\BelongsToOrganisation;
 use Database\Factories\PlayerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +31,8 @@ use Illuminate\Support\Carbon;
  * @property-read string $full_name
  */
 #[Fillable(['first_name', 'last_name', 'date_of_birth', 'shirt_number'])]
-class Player extends Model
+#[ObservedBy(AuditObserver::class)]
+class Player extends Model implements Auditable
 {
     use BelongsToOrganisation;
 
@@ -56,5 +61,15 @@ class Player extends Model
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function auditType(): string
+    {
+        return 'player';
+    }
+
+    public function auditActions(): array
+    {
+        return [AuditAction::Create, AuditAction::Update, AuditAction::Delete];
     }
 }
