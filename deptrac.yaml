@@ -61,6 +61,17 @@ deptrac:
               - type: classLike
                 value: ^Modules\\Fixtures\\Contracts\\.*
 
+        # Availability: hard-depends on Fixtures, so it may use
+        # FixturesContracts. It may never use Fixtures' internals layer.
+        - name: Availability
+          collectors:
+              - type: classLike
+                value: ^Modules\\Availability\\(?!Contracts\\).*
+        - name: AvailabilityContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\Availability\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -81,4 +92,16 @@ deptrac:
         # Contracts stay thin: framework types only, never the module's own
         # internals (a DTO must not hand out a model) and never Core.
         FixturesContracts:
+            - Framework
+
+        # A dependent module lists its dependency's *contracts* layer only.
+        # Adding `Fixtures` here instead would compile, run, and defeat the
+        # whole design: this is the line that makes the boundary real.
+        Availability:
+            - Core
+            - Framework
+            - AvailabilityContracts
+            - FixturesContracts
+
+        AvailabilityContracts:
             - Framework

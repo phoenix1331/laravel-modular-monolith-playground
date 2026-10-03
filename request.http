@@ -239,3 +239,28 @@ X-XSRF-TOKEN: {{xsrf}}
     "address": "1 River Lane",
     "postcode": "RV1 2AB"
 }
+
+### Availability module (needs Fixtures; 404 unless both are enabled)
+
+# Upcoming fixtures for the user's teams with available / maybe / unavailable counts.
+GET {{baseUrl}}/availability
+Accept: text/html
+
+###
+
+# One fixture's squad with each player's answer. Another club's fixture id is a 404.
+GET {{baseUrl}}/availability/fixtures/1
+Accept: text/html
+
+###
+
+# Record a player's answer (admins, or coaches of the fixture's team). status: available | maybe | unavailable.
+PUT {{baseUrl}}/availability/fixtures/1/players/1
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "status": "unavailable",
+    "note": "On holiday"
+}
