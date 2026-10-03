@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Organisation;
+use App\Models\Team;
 use App\Models\User;
 use App\Modules\ModuleManager;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Fixtures\Modules\Demo\DemoModule;
@@ -58,4 +60,19 @@ test('the super admin has no club, so no enabled modules', function () {
     $this->actingAs(User::factory()->superAdmin()->create())
         ->get(route('platform.dashboard'))
         ->assertInertia(fn (Assert $page) => $page->where('enabledModules', []));
+});
+
+test('the module gate runs before route model binding', function () {
+    Route::middleware(['web', 'auth', 'module:demo'])->get('/gated/{team}', fn (Team $team) => $team->name);
+    $user = User::factory()->admin()->forOrganisation($this->withoutModule)->create();
+    $team = Team::factory()->for($this->withoutModule)->create();
+
+    $queriedTeams = false;
+    DB::listen(function ($query) use (&$queriedTeams) {
+        $queriedTeams = $queriedTeams || str_contains($query->sql, '"teams"') || str_contains($query->sql, '`teams`');
+    });
+
+    $this->actingAs($user)->get("/gated/{$team->id}")->assertNotFound();
+
+    expect($queriedTeams)->toBeFalse();
 });

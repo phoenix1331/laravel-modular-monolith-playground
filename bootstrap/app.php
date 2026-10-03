@@ -12,6 +12,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,6 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class,
             'module' => EnsureModuleEnabled::class,
         ]);
+
+        // Role and module gates run before route model binding. Otherwise a
+        // bound model (e.g. {team}) is looked up first: the wrong role gets a
+        // 404 from the tenant scope instead of a 403, and a disabled module
+        // still queries its own tables before answering 404
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: EnsureUserHasRole::class);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: EnsureModuleEnabled::class);
 
         // Signed-in users visiting a guest page (e.g. /login) go to their own area
         $middleware->redirectUsersTo(function (Request $request): string {
