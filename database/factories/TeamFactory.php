@@ -22,7 +22,8 @@ class TeamFactory extends Factory
 
         return [
             'organisation_id' => Organisation::factory(),
-            'name' => $ageGroup.' '.fake()->unique()->randomElement(['Lions', 'Tigers', 'Hawks', 'Falcons', 'Wolves', 'Eagles', 'Foxes', 'Badgers', 'Otters', 'Kestrels']),
+            // Surname-based so generated names never collide with the readable names tests set explicitly (e.g. "U12 Lions")
+            'name' => fake()->unique()->lastName().' '.$ageGroup,
             'age_group' => $ageGroup,
         ];
     }

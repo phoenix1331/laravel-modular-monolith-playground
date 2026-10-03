@@ -104,6 +104,15 @@ class User extends Authenticatable implements Auditable
     }
 
     /**
+     * Whether this user is a worker assigned to coach the given team. The
+     * one definition of "coach of a team", used by Core and module policies.
+     */
+    public function coachesTeam(int $teamId): bool
+    {
+        return $this->isWorker() && $this->teams()->whereKey($teamId)->exists();
+    }
+
+    /**
      * Where this user lands after logging in, or when visiting a guest-only
      * page while signed in.
      */

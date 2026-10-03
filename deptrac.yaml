@@ -72,6 +72,17 @@ deptrac:
               - type: classLike
                 value: ^Modules\\Availability\\Contracts\\.*
 
+        # MatchReports: also hard-depends on Fixtures. It sits beside
+        # Availability; neither may see the other.
+        - name: MatchReports
+          collectors:
+              - type: classLike
+                value: ^Modules\\MatchReports\\(?!Contracts\\).*
+        - name: MatchReportsContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\MatchReports\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -104,4 +115,13 @@ deptrac:
             - FixturesContracts
 
         AvailabilityContracts:
+            - Framework
+
+        MatchReports:
+            - Core
+            - Framework
+            - MatchReportsContracts
+            - FixturesContracts
+
+        MatchReportsContracts:
             - Framework

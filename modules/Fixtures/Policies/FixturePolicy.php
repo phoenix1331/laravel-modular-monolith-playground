@@ -59,6 +59,6 @@ class FixturePolicy
         }
 
         return $user->isAdmin()
-            || ($user->isWorker() && $team->workers()->whereKey($user->id)->exists());
+            || $user->coachesTeam($team->id);
     }
 }

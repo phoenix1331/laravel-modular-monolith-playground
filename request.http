@@ -264,3 +264,33 @@ X-XSRF-TOKEN: {{xsrf}}
     "status": "unavailable",
     "note": "On holiday"
 }
+
+### Match Reports module (needs Fixtures; 404 unless both are enabled)
+
+# Played fixtures for the user's teams, newest first, with the score once a report is filed.
+GET {{baseUrl}}/match-reports
+Accept: text/html
+
+###
+
+# One fixture's report form (or read-only view) with the squad.
+GET {{baseUrl}}/match-reports/fixtures/1
+Accept: text/html
+
+###
+
+# File or correct a report (admins, or coaches of the team, after kick-off). Players left out lose their row.
+PUT {{baseUrl}}/match-reports/fixtures/1
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "goals_for": 3,
+    "goals_against": 1,
+    "summary": "Strong second half.",
+    "performances": [
+        { "player_id": 1, "goals": 2, "rating": 8 },
+        { "player_id": 2, "goals": 1, "rating": 7 }
+    ]
+}

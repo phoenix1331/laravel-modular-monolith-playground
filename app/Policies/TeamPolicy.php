@@ -36,7 +36,7 @@ class TeamPolicy
             return true;
         }
 
-        return $user->isWorker() && $team->workers()->whereKey($user->id)->exists();
+        return $user->coachesTeam($team->id);
     }
 
     public function create(User $user): bool

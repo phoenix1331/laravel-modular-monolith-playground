@@ -39,6 +39,6 @@ class AvailabilityResponsePolicy
         }
 
         return $user->isAdmin()
-            || ($user->isWorker() && $user->teams()->whereKey($fixture->teamId)->exists());
+            || $user->coachesTeam($fixture->teamId);
     }
 }
