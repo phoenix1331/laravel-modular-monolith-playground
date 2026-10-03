@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Modules\Fixtures\FixturesModule;
 
 return [
 
@@ -23,7 +24,7 @@ return [
     */
 
     'installed' => [
-        //
+        FixturesModule::class,
     ],
 
 ];

@@ -13,14 +13,15 @@ use Tests\TestCase;
 | Test Case
 |--------------------------------------------------------------------------
 |
-| Feature tests boot the full application against a fresh database. Unit and
+| Feature tests, and each module's own tests in modules/{Name}/Tests, boot
+| the full application against a fresh database. Unit and
 | Arch tests run without Laravel so they stay fast and framework-agnostic.
 |
 */
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', '../modules/*/Tests');
 
 /*
 |--------------------------------------------------------------------------

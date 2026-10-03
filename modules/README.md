@@ -2,6 +2,8 @@
 
 Each folder here is a feature module with its own namespace, `Modules\{Name}\`. Core (`app/`) never imports from this folder, so any module can be deleted without touching Core.
 
+`Fixtures/` is the reference module. Every file in it is annotated; copy its shape when building a new module.
+
 ## Anatomy
 
 ```

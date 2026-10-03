@@ -181,3 +181,61 @@ X-XSRF-TOKEN: {{xsrf}}
 {
     "enabled": false
 }
+
+### Fixtures module (404 unless enabled for the signed-in user's club)
+
+# Upcoming and recent fixtures for the teams the user can see.
+GET {{baseUrl}}/fixtures
+Accept: text/html
+
+###
+
+# Schedule a fixture (admins, or coaches for a team they coach). Fires the public FixtureScheduled event.
+POST {{baseUrl}}/fixtures
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "team_id": 1,
+    "venue_id": null,
+    "opponent": "Harbour Town",
+    "kick_off_at": "2026-10-10 10:30",
+    "is_home": true,
+    "competition": "League"
+}
+
+###
+
+# Update a fixture. The team cannot be changed (team_id is prohibited here).
+PUT {{baseUrl}}/fixtures/1
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "opponent": "Harbour Town Reserves",
+    "kick_off_at": "2026-10-10 11:00",
+    "is_home": false
+}
+
+###
+
+# Remove a fixture.
+DELETE {{baseUrl}}/fixtures/1
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+###
+
+# Add a venue (admins only).
+POST {{baseUrl}}/fixtures/venues
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "name": "Riverside Park",
+    "address": "1 River Lane",
+    "postcode": "RV1 2AB"
+}

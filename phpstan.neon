@@ -11,4 +11,8 @@ parameters:
         - database/
         - routes/
 
+    excludePaths:
+        # Pest test files inside modules are checked by the test run, not PHPStan
+        - modules/*/Tests/*
+
     level: 7

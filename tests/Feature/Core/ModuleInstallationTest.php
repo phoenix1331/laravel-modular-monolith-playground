@@ -10,6 +10,8 @@ use Tests\Fixtures\Modules\Demo\DemoModule;
 use Tests\Fixtures\Modules\Demo\DemoServiceProvider;
 
 test('with nothing installed, no module provider or route exists', function () {
+    installModules([]);
+
     expect(app(ModuleRegistry::class)->all())->toBe([])
         ->and(app()->getProvider(DemoServiceProvider::class))->toBeNull()
         ->and(Route::has('demo.index'))->toBeFalse();

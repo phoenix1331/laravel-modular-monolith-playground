@@ -22,6 +22,11 @@ deptrac:
         - ./app
         - ./modules
 
+    # Module tests are Pest files, not part of any layer. They exercise a
+    # module from the outside and are checked by the test run instead.
+    exclude_files:
+        - '#.*/modules/[^/]+/Tests/.*#'
+
     layers:
         # Core: organisations, users, roles, teams, players, feature flags, the
         # module registry and the audit log. Always installed, always on.
@@ -42,6 +47,20 @@ deptrac:
               - type: classLike
                 value: ^(Illuminate|Laravel|Inertia|Symfony|Carbon|Psr)\\.*
 
+        # Fixtures: the reference module. Every module gets this pair.
+        #
+        # FixturesContracts is the public surface: Contracts/ (FixtureLookup,
+        # FixtureData, events). Fixtures is everything else and is private.
+        # The negative lookahead keeps Contracts out of the internals layer.
+        - name: Fixtures
+          collectors:
+              - type: classLike
+                value: ^Modules\\Fixtures\\(?!Contracts\\).*
+        - name: FixturesContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\Fixtures\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -50,3 +69,16 @@ deptrac:
 
         # Framework sits outside `paths`, so it is never analysed as a source.
         Framework: ~
+
+        # A module's internals may use Core, the framework and its own
+        # contracts. Fixtures has no dependencies, so no other module's
+        # contracts appear here.
+        Fixtures:
+            - Core
+            - Framework
+            - FixturesContracts
+
+        # Contracts stay thin: framework types only, never the module's own
+        # internals (a DTO must not hand out a model) and never Core.
+        FixturesContracts:
+            - Framework
