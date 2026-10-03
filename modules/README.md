@@ -32,8 +32,11 @@ A missing hard dependency or a dependency cycle stops the application booting wi
 
 ## Rules
 
-| Rule                                                                                    | Enforced by                                                                         |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Only `Contracts/` is public. Other modules never reference anything else in this folder | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`)                   |
-| Every class belongs to a layer                                                          | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`)                       |
-| Installed is not enabled                                                                | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled |
+| Rule                                                                                    | Enforced by                                                                                                    |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Only `Contracts/` is public. Other modules never reference anything else in this folder | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`) and Pest arch (`tests/Arch/ModulesTest.php`) |
+| Every class belongs to a layer                                                          | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`)                                                  |
+| Installed is not enabled                                                                | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled                            |
+| No raw `DB::table()` style queries: they skip the tenancy scope                         | Pest source scan (`tests/Arch/ModulesTest.php`)                                                                |
+| Controllers do not build queries; reads go through `Queries/` classes                   | Pest source scan                                                                                               |
+| Services resolved by class, never by string key                                         | Pest source scan                                                                                               |

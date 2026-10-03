@@ -28,6 +28,15 @@ final class FixtureFormOptions
     }
 
     /**
+     * The team chosen on the form, within the current club. Another club's id
+     * is a 404 through the tenancy scope.
+     */
+    public function team(int $teamId): Team
+    {
+        return Team::findOrFail($teamId);
+    }
+
+    /**
      * @return Collection<int, Venue>
      */
     public function venues(): Collection

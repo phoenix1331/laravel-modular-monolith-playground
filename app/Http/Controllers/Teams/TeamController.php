@@ -10,6 +10,7 @@ use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
 use App\Queries\ClubWorkers;
+use App\Queries\TeamRoster;
 use App\Queries\VisibleTeams;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class TeamController extends Controller
         return to_route('teams.show', $team);
     }
 
-    public function show(Request $request, Team $team): Response
+    public function show(Request $request, Team $team, TeamRoster $roster): Response
     {
         Gate::authorize('view', $team);
 
@@ -75,13 +76,13 @@ class TeamController extends Controller
                 'name' => $team->name,
                 'age_group' => $team->age_group,
             ],
-            'players' => $team->players()->orderBy('last_name')->get()->map(fn (Player $player) => [
+            'players' => $roster->players($team)->map(fn (Player $player) => [
                 'id' => $player->id,
                 'full_name' => $player->full_name,
                 'shirt_number' => $player->shirt_number,
                 'date_of_birth' => $player->date_of_birth?->toDateString(),
             ]),
-            'workers' => $team->workers()->orderBy('name')->get(['users.id', 'users.name']),
+            'workers' => $roster->coaches($team),
             'can' => [
                 'update' => $user->can('update', $team),
                 'delete' => $user->can('delete', $team),
@@ -90,7 +91,7 @@ class TeamController extends Controller
         ]);
     }
 
-    public function edit(Team $team, ClubWorkers $workers): Response
+    public function edit(Team $team, ClubWorkers $workers, TeamRoster $roster): Response
     {
         Gate::authorize('update', $team);
 
@@ -99,7 +100,7 @@ class TeamController extends Controller
                 'id' => $team->id,
                 'name' => $team->name,
                 'age_group' => $team->age_group,
-                'worker_ids' => $team->workers()->pluck('users.id'),
+                'worker_ids' => $roster->coachIds($team),
             ],
             'workers' => $workers->query()->get(['id', 'name']),
         ]);

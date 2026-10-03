@@ -7,6 +7,7 @@ namespace Modules\Fixtures\Queries;
 use App\Models\User;
 use App\Queries\VisibleTeams;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Modules\Fixtures\Models\Fixture;
 
 /**
@@ -25,5 +26,25 @@ final class FixturesForUser
         return Fixture::query()
             ->with(['team:id,name', 'venue:id,name'])
             ->whereIn('team_id', $this->teams->for($user)->select('teams.id'));
+    }
+
+    /**
+     * Not kicked off yet, soonest first.
+     *
+     * @return Collection<int, Fixture>
+     */
+    public function upcoming(User $user, int $limit = 50): Collection
+    {
+        return $this->query($user)->where('kick_off_at', '>=', now())->orderBy('kick_off_at')->limit($limit)->get();
+    }
+
+    /**
+     * Already kicked off, most recent first.
+     *
+     * @return Collection<int, Fixture>
+     */
+    public function recent(User $user, int $limit = 20): Collection
+    {
+        return $this->query($user)->where('kick_off_at', '<', now())->orderByDesc('kick_off_at')->limit($limit)->get();
     }
 }

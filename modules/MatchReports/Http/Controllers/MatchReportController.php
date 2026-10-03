@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\MatchReports\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Player;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,14 +73,16 @@ class MatchReportController extends Controller
         ]);
     }
 
-    public function update(FileReportRequest $request, int $fixture, FileMatchReport $file): RedirectResponse
+    public function update(FileReportRequest $request, int $fixture, FileMatchReport $file, ReportSheet $sheet): RedirectResponse
     {
         $data = $this->resolve($fixture);
         Gate::authorize('file', [MatchReport::class, $data]);
 
         /** @var array{goals_for: int, goals_against: int, summary?: string|null, performances?: list<array{player_id: int, goals?: int, rating?: int|null}>} $details */
         $details = $request->validated();
-        $this->assertPlayersInTeam($details['performances'] ?? [], $data);
+        if (! $sheet->allInTeam($data, array_column($details['performances'] ?? [], 'player_id'))) {
+            throw ValidationException::withMessages(['performances' => 'Every player must be in the fixture\'s team.']);
+        }
 
         /** @var User $user */
         $user = $request->user();
@@ -90,19 +91,6 @@ class MatchReportController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Match report saved.')]);
 
         return to_route('match-reports.show', $data->id);
-    }
-
-    /**
-     * @param  list<array{player_id: int}>  $performances
-     */
-    private function assertPlayersInTeam(array $performances, FixtureData $fixture): void
-    {
-        $ids = array_column($performances, 'player_id');
-        $inTeam = Player::query()->where('team_id', $fixture->teamId)->whereKey($ids)->count();
-
-        if ($inTeam !== count($ids)) {
-            throw ValidationException::withMessages(['performances' => 'Every player must be in the fixture\'s team.']);
-        }
     }
 
     private function resolve(int $fixtureId): FixtureData

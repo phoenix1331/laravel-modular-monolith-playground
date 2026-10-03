@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Fixtures\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,8 +36,8 @@ class FixtureController extends Controller
         $user = $request->user();
 
         return Inertia::render('fixtures/pages/Index', [
-            'upcoming' => $this->rows($user, $fixtures->query($user)->where('kick_off_at', '>=', now())->orderBy('kick_off_at')->limit(50)->get()),
-            'results' => $this->rows($user, $fixtures->query($user)->where('kick_off_at', '<', now())->orderByDesc('kick_off_at')->limit(20)->get()),
+            'upcoming' => $this->rows($user, $fixtures->upcoming($user)),
+            'results' => $this->rows($user, $fixtures->recent($user)),
             'can' => [
                 'create' => $user->can('createAny', Fixture::class),
                 'manageVenues' => $user->can('viewAny', Venue::class),
@@ -59,9 +58,9 @@ class FixtureController extends Controller
         ]);
     }
 
-    public function store(FixtureRequest $request, ScheduleFixture $schedule): RedirectResponse
+    public function store(FixtureRequest $request, ScheduleFixture $schedule, FixtureFormOptions $options): RedirectResponse
     {
-        $team = Team::findOrFail($request->integer('team_id'));
+        $team = $options->team($request->integer('team_id'));
         Gate::authorize('create', [Fixture::class, $team]);
 
         $schedule->handle($team, $request->safe()->except('team_id'));

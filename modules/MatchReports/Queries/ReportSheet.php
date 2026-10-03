@@ -16,6 +16,16 @@ use Modules\MatchReports\Models\Performance;
 final class ReportSheet
 {
     /**
+     * Whether every given player is in the fixture's team.
+     *
+     * @param  list<int>  $playerIds
+     */
+    public function allInTeam(FixtureData $fixture, array $playerIds): bool
+    {
+        return Player::query()->where('team_id', $fixture->teamId)->whereKey($playerIds)->count() === count($playerIds);
+    }
+
+    /**
      * @return array{report: MatchReport|null, players: list<array{id: int, name: string, shirt_number: int|null, goals: int, rating: int|null}>}
      */
     public function for(FixtureData $fixture): array
