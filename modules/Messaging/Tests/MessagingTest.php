@@ -7,20 +7,26 @@ use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
 use App\Modules\ModuleManager;
+use App\Modules\ModuleRegistry;
 use Inertia\Testing\AssertableInertia as Assert;
 use Modules\Messaging\Models\Announcement;
 
 /*
 | Fixtures and Subscriptions are driven through their public routes and
 | command, so these tests see exactly what Messaging sees: published events.
+| Both are soft dependencies: a test that needs one skips when it is not
+| installed, and the rest of Messaging is still tested on its own.
 */
 
 beforeEach(function () {
     $this->club = Organisation::factory()->create();
     $modules = app(ModuleManager::class);
-    foreach (['fixtures', 'subscriptions', 'messaging'] as $key) {
-        $modules->enable($this->club, $key);
+    foreach (['fixtures', 'subscriptions'] as $softDependency) {
+        if (app(ModuleRegistry::class)->has($softDependency)) {
+            $modules->enable($this->club, $softDependency);
+        }
     }
+    $modules->enable($this->club, 'messaging');
 
     $this->admin = User::factory()->admin()->forOrganisation($this->club)->create();
     $this->coach = User::factory()->worker()->forOrganisation($this->club)->create();
@@ -56,6 +62,8 @@ function messagingOverdueFee(Team $team): void
 
 describe('reacting to other modules\' events', function () {
     test('a scheduled fixture is announced to the team', function () {
+        $this->skipUnlessModuleInstalled('fixtures');
+
         messagingScheduleFixture($this->team);
 
         $announcement = Announcement::sole();
@@ -68,6 +76,8 @@ describe('reacting to other modules\' events', function () {
     });
 
     test('an overdue payment becomes an admins-only reminder, even from a console command', function () {
+        $this->skipUnlessModuleInstalled('subscriptions');
+
         messagingOverdueFee($this->team);
 
         $reminder = Announcement::withoutOrganisationScope()->where('source', 'subscriptions')->sole();
@@ -79,6 +89,9 @@ describe('reacting to other modules\' events', function () {
     });
 
     test('with messaging disabled for the club, events post nothing', function () {
+        $this->skipUnlessModuleInstalled('fixtures');
+        $this->skipUnlessModuleInstalled('subscriptions');
+
         app(ModuleManager::class)->disable($this->club, 'messaging');
 
         messagingScheduleFixture($this->team);
@@ -88,6 +101,8 @@ describe('reacting to other modules\' events', function () {
     });
 
     test('another club\'s events never land on this club\'s board', function () {
+        $this->skipUnlessModuleInstalled('fixtures');
+
         auth()->logout();
         $otherClub = Organisation::factory()->create();
         app(ModuleManager::class)->enable($otherClub, 'fixtures');
@@ -104,6 +119,9 @@ describe('reacting to other modules\' events', function () {
 
 describe('the noticeboard', function () {
     test('coaches see club-wide and their own teams\' posts, never admin notices', function () {
+        $this->skipUnlessModuleInstalled('fixtures');
+        $this->skipUnlessModuleInstalled('subscriptions');
+
         messagingScheduleFixture($this->team);
         messagingScheduleFixture($this->otherTeam);
         messagingOverdueFee($this->team);

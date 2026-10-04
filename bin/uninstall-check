@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+#
+# Uninstall check: the proof that a module is detachable.
+#
+# Usage (inside the app container, normally via the Makefile):
+#   make uninstall-check MODULE=Messaging
+#
+# The claim this repo makes is that a module can be deleted from the codebase
+# and everything else keeps working. This script tests that claim literally,
+# in a throwaway copy of the project so the working tree is never touched:
+#
+#   1. Copy the project to a temp directory (no .git, no caches)
+#   2. Remove the module's line from config/modules.php (uninstall)
+#   3. Delete modules/{Name}/ and resources/js/modules/{key}/ (detach)
+#   4. Rebuild the autoloader and the generated Wayfinder route helpers
+#   5. Run every gate against what is left: the full Pest suite, Deptrac,
+#      the frontend type check and the frontend unit tests
+#
+# If anything outside the module still referenced it, step 5 fails and names
+# the file. A module that other installed modules hard-depend on cannot be
+# removed on its own: the application refuses to boot and says which module
+# needs it, which is the dependency rule working as intended.
+
+set -euo pipefail
+
+MODULE="${1:-}"
+
+if [ -z "$MODULE" ]; then
+    echo "usage: bin/uninstall-check <ModuleName>, e.g. bin/uninstall-check Messaging" >&2
+    exit 2
+fi
+
+SOURCE="$(cd "$(dirname "$0")/.." && pwd)"
+DEFINITION="Modules\\${MODULE}\\${MODULE}Module"
+
+if [ ! -d "$SOURCE/modules/$MODULE" ]; then
+    echo "error: modules/$MODULE does not exist" >&2
+    exit 2
+fi
+
+if ! grep -qF "${MODULE}Module::class" "$SOURCE/config/modules.php"; then
+    echo "error: $MODULE is not installed in config/modules.php" >&2
+    exit 2
+fi
+
+# The module's key names its frontend folder (resources/js/modules/{key})
+KEY="$(cd "$SOURCE" && php -r "require 'vendor/autoload.php'; echo (new $DEFINITION)->key();")"
+
+# Installed modules that hard-depend on this one would stop the app booting.
+# Say so up front rather than fail later inside composer's autoload hooks
+DEPENDENTS="$(cd "$SOURCE" && php -r "
+    require 'vendor/autoload.php';
+    \$app = require 'bootstrap/app.php';
+    \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+    \$names = array_map(fn (\$m) => \$m->name(), \$app->make(App\Modules\ModuleRegistry::class)->hardDependentsOf('$KEY'));
+    echo implode(', ', \$names);
+")"
+
+if [ -n "$DEPENDENTS" ]; then
+    echo "error: $MODULE cannot be removed on its own. Installed modules hard-depend on it: $DEPENDENTS" >&2
+    echo "       remove those first, or run the check on one of them instead" >&2
+    exit 1
+fi
+
+WORK="$(mktemp -d /tmp/uninstall-check.XXXXXX)"
+trap 'rm -rf "$WORK"' EXIT
+
+step() {
+    printf '\n\033[36m==> %s\033[0m\n' "$1"
+}
+
+step "Copying the project to $WORK"
+tar -C "$SOURCE" -cf - \
+    --exclude=./.git \
+    --exclude=./node_modules \
+    --exclude=./.deptrac.cache \
+    --exclude='./bootstrap/cache/*.php' \
+    --exclude='./storage/logs/*' \
+    --exclude='./storage/framework/views/*' \
+    . | tar -C "$WORK" -xf -
+
+# node_modules is only read, never changed, so a link saves copying it.
+# vendor is copied: Composer's autoloader resolves paths from its real
+# location, so a linked vendor would load classes from the original tree
+ln -s "$SOURCE/node_modules" "$WORK/node_modules"
+
+step "Uninstalling $MODULE: removing it from config/modules.php"
+sed -i \
+    -e "/^use Modules\\\\${MODULE}\\\\${MODULE}Module;$/d" \
+    -e "/^ *${MODULE}Module::class,$/d" \
+    "$WORK/config/modules.php"
+
+if grep -qF "${MODULE}Module" "$WORK/config/modules.php"; then
+    echo "error: could not remove $MODULE from config/modules.php" >&2
+    exit 1
+fi
+
+step "Deleting modules/$MODULE and resources/js/modules/$KEY"
+rm -rf "$WORK/modules/$MODULE" "$WORK/resources/js/modules/$KEY"
+
+cd "$WORK"
+
+step "Rebuilding the autoloader and Wayfinder route helpers"
+composer dump-autoload --quiet
+rm -rf resources/js/actions resources/js/routes resources/js/wayfinder
+php artisan wayfinder:generate --with-form --quiet
+php artisan modules:list
+
+step "Pest: full suite"
+php artisan test --compact
+
+step "Deptrac: module boundaries"
+./vendor/bin/deptrac analyse --fail-on-uncovered --no-progress --cache-file="$WORK/.deptrac.cache"
+
+step "Frontend: type check and unit tests"
+npm run --silent types:check
+npx vp test run
+
+printf '\n\033[32m%s uninstalled and deleted: the rest of the application still passes every gate.\033[0m\n' "$MODULE"

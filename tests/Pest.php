@@ -25,6 +25,41 @@ pest()->extend(TestCase::class)
 
 /*
 |--------------------------------------------------------------------------
+| Module test discovery
+|--------------------------------------------------------------------------
+|
+| phpunit.xml globs modules/*\/Tests, so a module still on disk but removed
+| from config/modules.php would have its tests run against an app where its
+| routes and providers no longer exist. Those tests are skipped instead,
+| naming the reason, so uninstalling a module never needs phpunit.xml edited.
+|
+| The config file is read directly, before Laravel boots: it only returns
+| class name strings, and the folder is the second namespace segment
+| (Modules\{Name}\{Name}Module lives in modules/{Name}/).
+|
+| Deleting the module folder removes its tests outright. `make
+| uninstall-check MODULE={Name}` does exactly that in a temp copy.
+|
+*/
+
+$installedModuleFolders = array_map(
+    fn (string $definition): string => explode('\\', $definition)[1],
+    (require __DIR__.'/../config/modules.php')['installed'],
+);
+
+foreach (glob(__DIR__.'/../modules/*/Tests', GLOB_ONLYDIR) ?: [] as $testsFolder) {
+    $module = basename(dirname($testsFolder));
+
+    if (in_array($module, $installedModuleFolders, true)) {
+        continue;
+    }
+
+    pest()->beforeEach(fn () => $this->markTestSkipped("{$module} is not installed in config/modules.php"))
+        ->in("../modules/{$module}/Tests");
+}
+
+/*
+|--------------------------------------------------------------------------
 | Helpers
 |--------------------------------------------------------------------------
 */

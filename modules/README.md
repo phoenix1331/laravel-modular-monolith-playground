@@ -51,3 +51,15 @@ A soft dependency goes through a **capability**: an interface in `app/Capabiliti
 | No raw `DB::table()` style queries: they skip the tenancy scope                         | Pest source scan (`tests/Arch/ModulesTest.php`)                                                                |
 | Controllers do not build queries; reads go through `Queries/` classes                   | Pest source scan                                                                                               |
 | Services resolved by class, never by string key                                         | Pest source scan                                                                                               |
+
+## Uninstalling a module
+
+| State       | How                                                             | What happens to its tests                      |
+| ----------- | --------------------------------------------------------------- | ---------------------------------------------- |
+| Installed   | Listed in `config/modules.php`                                  | Run with the suite                             |
+| Uninstalled | Remove its line from `config/modules.php`                       | Skipped by `tests/Pest.php`, naming the reason |
+| Deleted     | Also delete `modules/{Name}/` and `resources/js/modules/{key}/` | Gone with the folder                           |
+
+`make uninstall-check MODULE={Name}` is the proof that a module is detachable. In a temp copy of the project it removes the config line, deletes both folders, regenerates the Wayfinder route helpers, then runs Pest, Deptrac, the frontend type check and Vitest. Any file outside the module that still referenced it fails one of those gates. The working tree is never touched.
+
+A module other installed modules hard-depend on cannot be removed alone: the check stops and names the dependents. `make uninstall-check MODULE=Fixtures` fails until Availability and MatchReports go too.

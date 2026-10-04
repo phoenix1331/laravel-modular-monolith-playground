@@ -75,6 +75,8 @@ describe('without subscriptions (soft dependency absent)', function () {
     });
 
     test('fees left over from when subscriptions was on do not block orders', function () {
+        $this->skipUnlessModuleInstalled('subscriptions');
+
         app(ModuleManager::class)->enable($this->club, 'subscriptions');
         kitShopOverdueFee();
         app(ModuleManager::class)->disable($this->club, 'subscriptions');
@@ -84,7 +86,10 @@ describe('without subscriptions (soft dependency absent)', function () {
 });
 
 describe('with subscriptions (soft dependency present)', function () {
-    beforeEach(fn () => app(ModuleManager::class)->enable($this->club, 'subscriptions'));
+    beforeEach(function () {
+        $this->skipUnlessModuleInstalled('subscriptions');
+        app(ModuleManager::class)->enable($this->club, 'subscriptions');
+    });
 
     test('a paid-up player can order', function () {
         $this->actingAs($this->coach)->get(route('kit-shop.index'))
