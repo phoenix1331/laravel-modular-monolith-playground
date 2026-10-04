@@ -4,10 +4,18 @@
 # and Node on the runner, so it calls the same targets with `make test EXEC=`
 EXEC ?= docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js lint-ts stan types deptrac graph check build-check uninstall-check e2e artisan composer npm
+.PHONY: help setup up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js lint-ts stan types deptrac graph check build-check uninstall-check e2e artisan composer npm
 
 help: ## List available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+
+setup: ## First run: create .env, build and start the stack, generate the app key, migrate and seed
+	@test -f .env || cp .env.example .env
+	@docker compose up -d --build --wait
+	@grep -q '^APP_KEY=base64:' .env || $(EXEC) php artisan key:generate
+	@$(EXEC) php artisan migrate:fresh --seed
+	@docker compose restart app
+	@echo "Ready: http://localhost:$$(grep '^APP_PORT=' .env | cut -d= -f2)  (log in as admin@riverside.test / password)"
 
 up: ## Start containers in the background
 	@docker compose up -d

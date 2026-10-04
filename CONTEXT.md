@@ -111,6 +111,7 @@ Module flags follow the brief and are enabled only for installed modules: Rivers
 - `AppServiceProvider` overrides the `server` dev command to `frankenphp php-server` so `php artisan dev` stays the single entry point while FrankenPHP serves requests
 - Container runs as the host UID/GID (build args) so bind-mounted files stay host-owned
 - Fresh volume needs `migrate` before the queue worker stops logging missing-table errors
+- `make setup` is the first-run command: creates `.env`, `up --build --wait`, generates the key only if missing, `migrate:fresh --seed`, restarts the app. Tested from a fresh copy (about a minute)
 - `make check` runs every gate: Pint, `vp check`, ESLint boundaries, PHPStan, Deptrac (+ unassigned), vue-tsc, Vitest, Pest
 - `EXEC ?= docker compose exec app` in the Makefile: CI sets `EXEC=` so the same targets run directly on the runner
 - `make e2e` runs Playwright in the `playwright` service (profile `e2e`) against the running stack; run `make fresh` first
