@@ -44,3 +44,5 @@ yarn-error.log
 /opencode.jsonc
 /.deptrac.cache
 /.playwright-mcp
+/test-results
+/playwright-report

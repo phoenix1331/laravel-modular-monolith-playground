@@ -20,6 +20,24 @@ services:
             retries: 12
             start_period: 60s
 
+    # Browser tests, run with `make e2e`. Only started on demand (profile).
+    # Shares the app container's network, so localhost:8000 (the app) and
+    # localhost:5173 (Vite) resolve exactly as they do in a developer's
+    # browser. The image tag must match @playwright/test in package.json.
+    playwright:
+        image: mcr.microsoft.com/playwright:v1.63.0-noble
+        profiles: [e2e]
+        network_mode: service:app
+        user: '${UID:-1000}:${GID:-1000}'
+        working_dir: /app
+        environment:
+            HOME: /tmp
+        volumes:
+            - .:/app
+        depends_on:
+            app:
+                condition: service_healthy
+
     mysql:
         image: mysql:8.4
         ports:

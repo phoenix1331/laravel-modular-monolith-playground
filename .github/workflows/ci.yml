@@ -5,6 +5,9 @@
 # the app container; here `EXEC=` runs them straight on the runner, so a gate
 # is defined once and CI cannot drift from what developers run.
 #
+# The e2e job boots the real Docker stack, seeds the four clubs and checks
+# each admin's menu in a browser.
+#
 # A crossed module boundary fails the build three ways: Deptrac (PHP layers),
 # Pest arch tests (source scans) and ESLint (eslint-plugin-boundaries).
 
@@ -80,6 +83,62 @@ jobs:
 
             - name: Pest
               run: make test
+
+    e2e:
+        name: Browser tests
+        needs: gates
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, zip, pcntl, bcmath
+                  coverage: none
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: '24'
+                  cache: npm
+
+            # Installed on the runner so the app container's entrypoint finds
+            # them and starts straight away
+            - name: Install dependencies
+              run: |
+                  composer install --no-interaction --no-progress --prefer-dist
+                  npm ci
+
+            # The container runs as the runner's user so it can write to the
+            # checkout, as it runs as the developer's user locally
+            - name: Configure the stack
+              run: |
+                  cp .env.example .env
+                  sed -i "s|^APP_KEY=.*|APP_KEY=base64:$(openssl rand -base64 32)|" .env
+                  printf 'UID=%s\nGID=%s\n' "$(id -u)" "$(id -g)" >> .env
+
+            - name: Start the stack (FrankenPHP, MySQL, Vite)
+              run: docker compose up -d --build --wait
+
+            - name: Seed the clubs
+              run: make fresh
+
+            - name: Playwright
+              run: make e2e
+
+            - name: Upload the report
+              if: failure()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: playwright-report
+                  path: |
+                      playwright-report/
+                      test-results/
+                  retention-days: 7
+
+            - name: App logs
+              if: failure()
+              run: docker compose logs app
 
     uninstall:
         name: Uninstall ${{ matrix.module }}

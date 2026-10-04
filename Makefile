@@ -4,7 +4,7 @@
 # and Node on the runner, so it calls the same targets with `make test EXEC=`
 EXEC ?= docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js lint-ts stan types deptrac graph check build-check uninstall-check artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js lint-ts stan types deptrac graph check build-check uninstall-check e2e artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -92,6 +92,9 @@ build-check: ## Verify the production build compiles, then remove it so dev keep
 
 uninstall-check: ## Prove a module is detachable: delete it in a temp copy and run every gate, e.g. make uninstall-check MODULE=Messaging
 	@$(EXEC) bin/uninstall-check $(MODULE)
+
+e2e: ## Browser tests against the running stack and seeded data (run make fresh first)
+	@docker compose run --rm playwright npx playwright test
 
 artisan: ## Run an artisan command, e.g. make artisan cmd="route:list"
 	@$(EXEC) php artisan $(cmd)
