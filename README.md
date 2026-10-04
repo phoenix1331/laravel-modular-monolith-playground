@@ -1,5 +1,8 @@
 # Laravel Modular Monolith Playground
 
+<img width="3156" height="1616" alt="Screenshot 2026-10-04 165000" src="https://github.com/user-attachments/assets/1ecb6c90-4436-4f4c-a05f-0318407de7a8" />
+
+
 A Laravel 13 and Vue 3 app for grassroots sports clubs, where feature modules switch on or off per club and can be deleted from the codebase without breaking anything, with the boundaries enforced by Deptrac, Pest and ESLint.
 
 [![CI](https://github.com/phoenix1331/laravel-modular-monolith-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/phoenix1331/laravel-modular-monolith-playground/actions/workflows/ci.yml)
