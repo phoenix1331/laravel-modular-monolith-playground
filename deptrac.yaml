@@ -126,6 +126,8 @@ deptrac:
               - type: classLike
                 value: ^Modules\\Messaging\\Contracts\\.*
 
+        # make:module adds new module layers above this line
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -207,6 +209,8 @@ deptrac:
         MessagingContracts:
             - Framework
 
+        # make:module adds new module rulesets above this line
+
     # Module graph: `make graph` renders docs/modules.png with the Graphviz
     # formatter. Each arrow is a real dependency found in the code, so the
     # picture cannot drift from what the ruleset enforces.
@@ -243,3 +247,4 @@ deptrac:
                 Messaging:
                     - Messaging
                     - MessagingContracts
+                # make:module adds new module groups above this line

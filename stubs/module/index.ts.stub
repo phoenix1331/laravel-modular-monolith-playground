@@ -1,0 +1,12 @@
+/**
+ * {{ title }}'s public frontend entry: the only file in this folder other
+ * modules may import. Its links appear only for clubs with {{ title }} enabled.
+ */
+import { Puzzle } from '@lucide/vue';
+import { defineModule } from '@/lib/modules';
+import {{ camel }} from '@/routes/{{ key }}';
+
+export default defineModule({
+    key: '{{ key }}',
+    navigation: [{ title: '{{ title }}', href: {{ camel }}.index(), icon: Puzzle }],
+});

@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\Organisation;
+use App\Models\User;
+use App\Modules\ModuleManager;
+use Inertia\Testing\AssertableInertia as Assert;
+
+/*
+| {{ title }}'s own tests. They run while the module is installed, are skipped
+| once it is removed from config/modules.php, and go when its folder does.
+*/
+
+beforeEach(function () {
+    $this->club = Organisation::factory()->create();
+    $this->admin = User::factory()->admin()->forOrganisation($this->club)->create();
+});
+
+test('the {{ title }} page opens for a club with it enabled', function () {
+    foreach ({{ enable }} as $key) {
+        app(ModuleManager::class)->enable($this->club, $key);
+    }
+
+    $this->actingAs($this->admin)
+        ->get(route('{{ key }}.index'))
+        ->assertInertia(fn (Assert $page) => $page->component('{{ key }}/pages/Index'));
+});
+
+test('a club without {{ title }} enabled gets a 404', function () {
+    $this->actingAs($this->admin)
+        ->get(route('{{ key }}.index'))
+        ->assertNotFound();
+});

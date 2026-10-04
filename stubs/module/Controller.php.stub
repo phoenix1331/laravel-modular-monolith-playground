@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ name }}\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * Renders resources/js/modules/{{ key }}/pages/Index.vue. Reads belong in a
+ * Queries/ class, not here: controllers never build queries.
+ */
+final class {{ name }}Controller extends Controller
+{
+    public function index(): Response
+    {
+        return Inertia::render('{{ key }}/pages/Index');
+    }
+}

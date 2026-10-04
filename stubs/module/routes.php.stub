@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+| {{ title }} routes, wrapped by ModuleServiceProvider in the club area and
+| `module:{{ key }}`: a club without {{ title }} enabled gets a 404.
+*/
+
+use Illuminate\Support\Facades\Route;
+use Modules\{{ name }}\Http\Controllers\{{ name }}Controller;
+
+Route::prefix('{{ key }}')->name('{{ key }}.')->group(function () {
+    Route::get('/', [{{ name }}Controller::class, 'index'])->name('index');
+});

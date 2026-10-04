@@ -20,6 +20,8 @@ modules/{Name}/
 
 ## Installing a module
 
+`php artisan make:module {Name} --hard={key} --soft={key}` does steps 1 to 6 below, plus the Deptrac layers and the CI uninstall matrix entry, and leaves a working gated page with a test. Templates are in `stubs/module/`. By hand:
+
 1. `{Name}Module.php` extends `App\Modules\ModuleDefinition`: key, name, hard and soft dependencies (by key, never by class)
 2. `{Name}ServiceProvider.php` extends `App\Modules\ModuleServiceProvider`: loads `Routes/web.php` into the club area and `Database/Migrations`
 3. Add the definition class to `config/modules.php`

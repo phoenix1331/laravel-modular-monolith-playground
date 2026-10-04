@@ -97,6 +97,7 @@ jobs:
                     - KitShop
                     - Compliance
                     - Messaging
+                    # make:module adds new modules above this line
         steps:
             - uses: actions/checkout@v7
 

@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ name }};
+
+use App\Modules\ModuleDefinition;
+use App\Modules\ModuleServiceProvider;
+
+/**
+ * The base provider loads Routes/web.php into the club area behind
+ * `module:{{ key }}`, and Database/Migrations. Bind this module's contracts
+ * in register() when other modules need them.
+ */
+final class {{ name }}ServiceProvider extends ModuleServiceProvider
+{
+    protected function definition(): ModuleDefinition
+    {
+        return new {{ name }}Module;
+    }
+}
