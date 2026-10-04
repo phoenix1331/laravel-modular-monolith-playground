@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import NativeSelect from '@/components/NativeSelect.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Option } from '../types';
@@ -16,19 +17,16 @@ defineProps<{
         competition?: string | null;
     };
 }>();
-
-const selectClass =
-    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs';
 </script>
 
 <template>
     <div v-if="teams" class="grid gap-2">
         <Label for="team_id">Team</Label>
-        <select id="team_id" name="team_id" required :class="selectClass">
+        <NativeSelect id="team_id" name="team_id" required>
             <option v-for="team in teams" :key="team.id" :value="team.id">
                 {{ team.name }}
             </option>
-        </select>
+        </NativeSelect>
         <InputError :message="errors.team_id" />
     </div>
 
@@ -59,14 +57,14 @@ const selectClass =
 
         <div class="grid gap-2">
             <Label for="is_home">Home or away</Label>
-            <select id="is_home" name="is_home" :class="selectClass">
+            <NativeSelect id="is_home" name="is_home">
                 <option value="1" :selected="defaults?.is_home !== false">
                     Home
                 </option>
                 <option value="0" :selected="defaults?.is_home === false">
                     Away
                 </option>
-            </select>
+            </NativeSelect>
             <InputError :message="errors.is_home" />
         </div>
     </div>
@@ -74,7 +72,7 @@ const selectClass =
     <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-2">
             <Label for="venue_id">Venue</Label>
-            <select id="venue_id" name="venue_id" :class="selectClass">
+            <NativeSelect id="venue_id" name="venue_id">
                 <option value="">Not set</option>
                 <option
                     v-for="venue in venues"
@@ -84,7 +82,7 @@ const selectClass =
                 >
                     {{ venue.name }}
                 </option>
-            </select>
+            </NativeSelect>
             <InputError :message="errors.venue_id" />
         </div>
 

@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import ShopController from '@/actions/Modules/KitShop/Http/Controllers/ShopController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import NativeSelect from '@/components/NativeSelect.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,9 +47,6 @@ const sizes = computed(
         props.products.find((product) => product.id === productId.value)
             ?.stock ?? [],
 );
-
-const selectClass =
-    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm';
 
 function fulfil(id: number): void {
     router.post(ShopController.fulfil.url(id), {}, { preserveScroll: true });
@@ -114,7 +112,7 @@ function fulfil(id: number): void {
             <InputError :message="orderError" />
             <div class="grid gap-2">
                 <Label for="player_id">Player</Label>
-                <select id="player_id" name="player_id" :class="selectClass">
+                <NativeSelect id="player_id" name="player_id">
                     <option
                         v-for="player in players"
                         :key="player.id"
@@ -124,17 +122,21 @@ function fulfil(id: number): void {
                             player.paid_up ? '' : ' · overdue subs'
                         }}
                     </option>
-                </select>
+                </NativeSelect>
                 <InputError :message="errors.player_id" />
             </div>
             <div class="grid gap-4 sm:grid-cols-3">
                 <div class="grid gap-2">
                     <Label for="product_id">Item</Label>
-                    <select
+                    <NativeSelect
                         id="product_id"
-                        v-model="productId"
+                        :value="productId"
+                        @change="
+                            productId = Number(
+                                ($event.target as HTMLSelectElement).value,
+                            )
+                        "
                         name="product_id"
-                        :class="selectClass"
                     >
                         <option
                             v-for="product in products"
@@ -143,11 +145,11 @@ function fulfil(id: number): void {
                         >
                             {{ product.name }}
                         </option>
-                    </select>
+                    </NativeSelect>
                 </div>
                 <div class="grid gap-2">
                     <Label for="size">Size</Label>
-                    <select id="size" name="size" :class="selectClass">
+                    <NativeSelect id="size" name="size">
                         <option
                             v-for="line in sizes"
                             :key="line.size"
@@ -156,7 +158,7 @@ function fulfil(id: number): void {
                         >
                             {{ line.size }}
                         </option>
-                    </select>
+                    </NativeSelect>
                 </div>
                 <div class="grid gap-2">
                     <Label for="quantity">Quantity</Label>

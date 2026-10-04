@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules;
 
+use Illuminate\Database\Seeder;
+
 /**
  * Describes one module to Core: what it is called and what it depends on.
  *
@@ -60,6 +62,20 @@ abstract class ModuleDefinition
     public function description(): string
     {
         return '';
+    }
+
+    /**
+     * Demo data for `make fresh`, run after Core's seeders and after the
+     * seeders of this module's dependencies. Null when the module has none.
+     *
+     * The seeder decides which clubs get data, usually only those with the
+     * module enabled.
+     *
+     * @return class-string<Seeder>|null
+     */
+    public function seeder(): ?string
+    {
+        return null;
     }
 
     /**

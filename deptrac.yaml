@@ -106,6 +106,15 @@ deptrac:
               - type: classLike
                 value: ^Modules\\KitShop\\Contracts\\.*
 
+        - name: Compliance
+          collectors:
+              - type: classLike
+                value: ^Modules\\Compliance\\(?!Contracts\\).*
+        - name: ComplianceContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\Compliance\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -164,4 +173,12 @@ deptrac:
             - KitShopContracts
 
         KitShopContracts:
+            - Framework
+
+        Compliance:
+            - Core
+            - Framework
+            - ComplianceContracts
+
+        ComplianceContracts:
             - Framework

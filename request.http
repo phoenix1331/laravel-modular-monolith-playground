@@ -384,3 +384,32 @@ X-XSRF-TOKEN: {{xsrf}}
     "size": "YL",
     "quantity": 20
 }
+
+### Compliance module (admins see the club register, workers their own certificates)
+
+# Register. status: attention (default) | expired | expiring | missing | all
+GET {{baseUrl}}/compliance?status=attention
+Accept: text/html
+
+###
+
+# Record a certificate for a worker (admins only). type: DBS check | Safeguarding Children | First Aid
+POST {{baseUrl}}/compliance/certificates
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "user_id": 4,
+    "type": "Safeguarding Children",
+    "reference": "SAF-00004",
+    "issued_on": "2026-10-01",
+    "expires_on": "2029-10-01"
+}
+
+###
+
+# Remove a certificate (admins only).
+DELETE {{baseUrl}}/compliance/certificates/1
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}

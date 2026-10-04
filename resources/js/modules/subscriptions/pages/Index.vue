@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import FeeController from '@/actions/Modules/Subscriptions/Http/Controllers/FeeController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import NativeSelect from '@/components/NativeSelect.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,12 +172,7 @@ function remove(fee: Fee): void {
             <h2 class="text-sm font-medium">Charge a team</h2>
             <div class="grid gap-2">
                 <Label for="team_id">Team</Label>
-                <select
-                    id="team_id"
-                    name="team_id"
-                    required
-                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
-                >
+                <NativeSelect id="team_id" name="team_id" required>
                     <option
                         v-for="team in teams"
                         :key="team.id"
@@ -184,7 +180,7 @@ function remove(fee: Fee): void {
                     >
                         {{ team.name }}
                     </option>
-                </select>
+                </NativeSelect>
                 <InputError :message="errors.team_id" />
             </div>
             <div class="grid gap-2">
