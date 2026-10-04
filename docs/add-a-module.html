@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Add a module</title>
+        <meta
+            name="description"
+            content="A walkthrough of adding a Training module to the Laravel modular monolith playground: definition, provider, Deptrac layers, frontend entry, tests, and proving it can be deleted again."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="assets/site.css" />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e5a3f'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M16 3v26' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E"
+        />
+    </head>
+    <body>
+        <a class="skip" href="#main">Skip to content</a>
+
+        <header class="masthead">
+            <div class="masthead-inner">
+                <a class="brand" href="./">Modular monolith playground</a>
+                <nav aria-label="Site">
+                    <a href="./">How it works</a>
+                    <a href="add-a-module.html" aria-current="page"
+                        >Add a module</a
+                    >
+                    <a
+                        href="https://github.com/phoenix1331/laravel-modular-monolith-playground"
+                        >Source on GitHub</a
+                    >
+                </nav>
+            </div>
+        </header>
+
+        <div class="page">
+            <main id="main">
+                <section class="hero" aria-labelledby="title">
+                    <h1 id="title">Add a Training module</h1>
+                    <p class="lede">
+                        Coaches want to post training sessions for their teams.
+                        This walks through building that as a new module, from
+                        an empty folder to a module that clubs can switch on and
+                        the codebase can delete again. Copy the shape of
+                        <code>modules/Compliance</code>, the smallest real
+                        module, and keep <code>modules/Fixtures</code> open for
+                        the annotated reference.
+                    </p>
+                    <div class="callout">
+                        <p>
+                            Commands run inside the app container through the
+                            Makefile, so <code>make up</code> first. Nothing
+                            below edits a file in <code>app/</code>: if you find
+                            yourself changing Core to fit a module in, the
+                            boundary has slipped.
+                        </p>
+                    </div>
+                </section>
+
+                <ol class="steps">
+                    <li>
+                        <h2>Decide the key and the dependencies</h2>
+                        <p>
+                            The key is how everything else refers to the module:
+                            Pennant flag, route names, table prefix, frontend
+                            folder. Lowercase kebab case.
+                        </p>
+                        <div class="table-wrap">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Key</th>
+                                        <td><code>training</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">
+                                            PHP folder and namespace
+                                        </th>
+                                        <td>
+                                            <code>modules/Training/</code>,
+                                            <code>Modules\Training\</code> (the
+                                            key in PascalCase)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Frontend folder</th>
+                                        <td>
+                                            <code
+                                                >resources/js/modules/training/</code
+                                            >
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Tables</th>
+                                        <td>
+                                            Prefixed with the key:
+                                            <code>training_sessions</code>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Hard dependencies</th>
+                                        <td>
+                                            None: sessions belong to Core teams
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Soft dependencies</th>
+                                        <td>None yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>
+                            If sessions had to link to fixtures, Training would
+                            hard-depend on <code>fixtures</code> and talk to it
+                            only through <code>FixtureLookup</code>. If it just
+                            wanted to post an announcement when Messaging is
+                            around, that would be a soft dependency through an
+                            event.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Write the definition</h2>
+                        <p>
+                            The definition is what Core reads. It names the
+                            module and its dependencies by key, so it never
+                            imports another module.
+                        </p>
+                        <pre><code><span class="file">modules/Training/TrainingModule.php</span>namespace Modules\Training;
+
+use App\Modules\ModuleDefinition;
+
+final class TrainingModule extends ModuleDefinition
+{
+    public function key(): string
+    {
+        return 'training';
+    }
+
+    public function name(): string
+    {
+        return 'Training';
+    }
+
+    public function description(): string
+    {
+        return 'Training sessions for each team.';
+    }
+
+    public function serviceProvider(): string
+    {
+        return TrainingServiceProvider::class;
+    }
+}</code></pre>
+                        <p>
+                            <code>hardDependencies()</code>,
+                            <code>softDependencies()</code> and
+                            <code>seeder()</code> default to nothing; override
+                            them when you need them.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Add the service provider</h2>
+                        <p>
+                            The base provider loads
+                            <code>Routes/web.php</code> into the club area
+                            behind <code>module:training</code>, and
+                            <code>Database/Migrations</code>. A module with
+                            nothing to bind needs nothing more.
+                        </p>
+                        <pre><code><span class="file">modules/Training/TrainingServiceProvider.php</span>namespace Modules\Training;
+
+use App\Modules\ModuleDefinition;
+use App\Modules\ModuleServiceProvider;
+
+final class TrainingServiceProvider extends ModuleServiceProvider
+{
+    protected function definition(): ModuleDefinition
+    {
+        return new TrainingModule;
+    }
+}</code></pre>
+                    </li>
+
+                    <li>
+                        <h2>Create the table and the model</h2>
+                        <p>
+                            Every module table carries
+                            <code>organisation_id</code>, and every model uses
+                            <code>BelongsToOrganisation</code>. That one trait
+                            scopes reads to the current club and fills the
+                            column on create, so one club can never see
+                            another's sessions.
+                        </p>
+                        <pre><code><span class="file">modules/Training/Database/Migrations/2026_10_10_100000_create_training_sessions_table.php</span>Schema::create('training_sessions', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('organisation_id')->constrained()->restrictOnDelete();
+    $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+    $table->dateTime('starts_at');
+    $table->string('location');
+    $table->string('focus')->nullable();
+    $table->timestamps();
+
+    $table->index(['organisation_id', 'starts_at']);
+});</code></pre>
+                        <pre><code><span class="file">modules/Training/Models/TrainingSession.php</span>#[Table('training_sessions')]
+#[Fillable(['team_id', 'starts_at', 'location', 'focus'])]
+#[ObservedBy(AuditObserver::class)]
+class TrainingSession extends Model implements Auditable
+{
+    use BelongsToOrganisation;
+
+    // casts(), team() relation, auditType(), auditActions()
+}</code></pre>
+                        <p>
+                            Foreign keys to Core tables (teams, players, users)
+                            are fine. A foreign key into another module's table
+                            is not: keep that as a plain id and resolve it
+                            through the other module's contract.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Routes, controller, query and policy</h2>
+                        <p>
+                            Controllers never build queries; reads go through a
+                            class in <code>Queries/</code>. A Pest source scan
+                            enforces it.
+                        </p>
+                        <pre><code><span class="file">modules/Training/Routes/web.php</span>Route::prefix('training')->name('training.')->group(function () {
+    Route::get('/', [SessionController::class, 'index'])->name('index');
+    Route::post('sessions', [SessionController::class, 'store'])->name('sessions.store');
+});</code></pre>
+                        <pre><code><span class="file">modules/Training/Http/Controllers/SessionController.php</span>public function index(Request $request, UpcomingSessions $sessions): Response
+{
+    Gate::authorize('viewAny', TrainingSession::class);
+
+    return Inertia::render('training/pages/Index', [
+        'sessions' => $sessions->for($request->user()),
+    ]);
+}</code></pre>
+                        <p>
+                            Put <code>TrainingSessionPolicy</code> in
+                            <code>modules/Training/Policies/</code>; Laravel
+                            discovers it next to the model's namespace. Use
+                            <code>User::coachesTeam()</code> for "is this coach
+                            on this team", as every other module does. The page
+                            name, <code>training/pages/Index</code>, is the
+                            page's path under <code>resources/js/modules</code>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Install it</h2>
+                        <p>
+                            Add the definition to the list. Order does not
+                            matter: modules are registered dependencies first.
+                        </p>
+                        <pre><code><span class="file">config/modules.php</span>'installed' => [
+    // ...
+    MessagingModule::class,
+    TrainingModule::class,
+],</code></pre>
+                        <pre><code>make migrate
+make artisan cmd="modules:list"</code></pre>
+                        <p>
+                            Installed is not enabled. No club can reach
+                            <code>/training</code> yet: every route returns 404
+                            until the super admin switches it on.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Give it Deptrac layers</h2>
+                        <p>
+                            Two layers, two ruleset entries and a group for the
+                            graph. Until you do,
+                            <code>make deptrac</code> fails:
+                            <code>--fail-on-uncovered</code> and
+                            <code>debug:unassigned</code> both catch classes
+                            that belong to no layer.
+                        </p>
+                        <pre><code><span class="file">deptrac.yaml</span>layers:
+    - name: Training
+      collectors:
+          - type: classLike
+            value: ^Modules\\Training\\(?!Contracts\\).*
+    - name: TrainingContracts
+      collectors:
+          - type: classLike
+            value: ^Modules\\Training\\Contracts\\.*
+
+ruleset:
+    Training:
+        - Core
+        - Framework
+        - TrainingContracts
+    TrainingContracts:
+        - Framework
+
+formatters:
+    graphviz:
+        groups:
+            Training:
+                - Training
+                - TrainingContracts</code></pre>
+                        <p>
+                            Had Training hard-depended on Fixtures, its ruleset
+                            entry would add
+                            <code>FixturesContracts</code>. Never
+                            <code>Fixtures</code>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Add the frontend entry and page</h2>
+                        <p>
+                            The registry finds every
+                            <code>resources/js/modules/*/index.ts</code> by
+                            glob, so there is no list to edit. The link appears
+                            only for clubs with Training enabled.
+                        </p>
+                        <pre><code><span class="file">resources/js/modules/training/index.ts</span>import { Dumbbell } from '@lucide/vue';
+import { defineModule } from '@/lib/modules';
+import training from '@/routes/training';
+
+export default defineModule({
+    key: 'training',
+    navigation: [
+        { title: 'Training', href: training.index(), icon: Dumbbell },
+    ],
+});</code></pre>
+                        <p>
+                            The page goes in
+                            <code
+                                >resources/js/modules/training/pages/Index.vue</code
+                            >
+                            and gets the app layout automatically. It may import
+                            shared components, its own files and Wayfinder's
+                            <code>@/routes/training</code> and
+                            <code>@/actions/Modules/Training</code> helpers.
+                            Importing another module's pages or helpers fails
+                            <code>make lint-js</code>.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Write tests inside the module</h2>
+                        <p>
+                            Tests go in <code>modules/Training/Tests/</code>.
+                            They boot the full app against a fresh database, run
+                            with the suite while Training is installed, are
+                            skipped once it is removed from
+                            <code>config/modules.php</code>, and vanish when the
+                            folder is deleted.
+                        </p>
+                        <pre><code><span class="file">modules/Training/Tests/TrainingTest.php</span>beforeEach(function () {
+    $this->club = Organisation::factory()->create();
+    app(ModuleManager::class)->enable($this->club, 'training');
+});
+
+test('coaches see sessions for their own teams only', function () {
+    // ...
+});
+
+test('a club without training gets a 404', function () {
+    // ...
+});</code></pre>
+                        <p>
+                            Prefix any helper functions with the module
+                            (<code>trainingSession()</code>): Pest loads every
+                            test file into one process. For demo data, add
+                            <code>Database/Seeders/TrainingSeeder.php</code> and
+                            return it from <code>seeder()</code>; it runs on
+                            <code>make fresh</code> for clubs that have Training
+                            enabled.
+                        </p>
+                    </li>
+
+                    <li>
+                        <h2>Switch it on and prove it detaches</h2>
+                        <p>
+                            Log in as <code>super@platform.test</code> (password
+                            <code>password</code>), open a club, and enable
+                            Training. Then run the gates:
+                        </p>
+                        <pre><code>make check                               <span class="c"># every gate: Pint, Oxlint, ESLint boundaries, PHPStan, Deptrac, types, tests</span>
+make graph                               <span class="c"># redraw docs/modules.png with the new box</span>
+make uninstall-check MODULE=Training     <span class="c"># delete it in a temp copy and run every gate again</span></code></pre>
+                        <p>
+                            The last one is the real test of the design. If
+                            anything outside
+                            <code>modules/Training</code> and
+                            <code>resources/js/modules/training</code> still
+                            mentions the module, it fails and names the file.
+                            Add Training to the uninstall matrix in
+                            <code>.github/workflows/ci.yml</code> so CI keeps
+                            proving it.
+                        </p>
+                    </li>
+                </ol>
+
+                <section aria-labelledby="files-title">
+                    <h2 id="files-title">Files to read alongside this</h2>
+                    <ul>
+                        <li>
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Modules/ModuleDefinition.php"
+                                >app/Modules/ModuleDefinition.php</a
+                            >: every method a definition can override
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Modules/ModuleServiceProvider.php"
+                                >app/Modules/ModuleServiceProvider.php</a
+                            >: what the base provider wires up
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/tree/main/modules/Fixtures"
+                                >modules/Fixtures/</a
+                            >: the annotated reference module
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/tree/main/modules/Compliance"
+                                >modules/Compliance/</a
+                            >: the smallest complete module
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/modules/README.md"
+                                >modules/README.md</a
+                            >: anatomy and rules, with the tool that enforces
+                            each
+                        </li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer>
+                <p>
+                    <a href="./">How it works</a> explains the ideas behind each
+                    step.
+                    <a
+                        href="https://github.com/phoenix1331/laravel-modular-monolith-playground"
+                        >Source on GitHub</a
+                    >.
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>

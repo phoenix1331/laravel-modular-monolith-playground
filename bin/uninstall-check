@@ -115,6 +115,7 @@ step "Deptrac: module boundaries"
 step "Frontend: module boundaries, type check and unit tests"
 npx eslint resources/js
 npm run --silent types:check
-npx vp test run
+# laravel-vite-plugin refuses a dev server when CI=true; Vitest needs one
+LARAVEL_BYPASS_ENV_CHECK=1 npx vp test run
 
 printf '\n\033[32m%s uninstalled and deleted: the rest of the application still passes every gate.\033[0m\n' "$MODULE"

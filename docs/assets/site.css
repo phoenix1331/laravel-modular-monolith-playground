@@ -1,0 +1,642 @@
+/*
+ * Laravel modular monolith playground: GitHub Pages styles.
+ * No build step: plain CSS, served as-is from docs/.
+ *
+ * The palette comes from a grassroots pitch: chalk lines, turf, and the
+ * yellow of a training bib. Bib yellow means one thing only: "enabled".
+ */
+
+:root {
+    --chalk: #f5f8f4;
+    --paper: #ffffff;
+    --ink: #15241d;
+    --ink-soft: #4a5c53;
+    --turf: #1e5a3f;
+    --turf-soft: #dcebe2;
+    --line: #cbd6cf;
+    --bib: #e9b824;
+    --bib-ink: #3d2f00;
+    --off: #eef1ef;
+    --code-bg: #10251b;
+    --code-ink: #e3efe7;
+    --code-muted: #8fb3a0;
+    --focus: #e9b824;
+
+    --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --body: 'Barlow', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --measure: 70ch;
+    --radius-s: 4px;
+    --radius-m: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --chalk: #0e1a14;
+        --paper: #142219;
+        --ink: #e5eee8;
+        --ink-soft: #a6b9ae;
+        --turf: #7cc59c;
+        --turf-soft: #1d3428;
+        --line: #2d4537;
+        --bib: #f2c94c;
+        --bib-ink: #2b2100;
+        --off: #18271f;
+        --code-bg: #0a140f;
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 1.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--chalk);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+a {
+    color: var(--turf);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+}
+
+a:hover {
+    text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+    margin: 0;
+}
+
+h1 {
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+}
+
+h2 {
+    font-size: clamp(2rem, 3.6vw, 2.6rem);
+    margin-bottom: 0.9rem;
+}
+
+h3 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 2rem 0 0.5rem;
+}
+
+p,
+ul,
+ol {
+    margin: 0 0 1rem;
+    max-width: var(--measure);
+}
+
+/* File paths are long single words: let them break rather than push the page wide */
+p code,
+li code,
+td code,
+.source a,
+main li a {
+    overflow-wrap: anywhere;
+}
+
+code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--off);
+    padding: 0.08em 0.32em;
+    border-radius: var(--radius-s);
+}
+
+pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    line-height: 1.55;
+    padding: 1.1rem 1.25rem;
+    border-radius: var(--radius-m);
+    overflow-x: auto;
+    margin: 0 0 1.25rem;
+    max-width: 100%;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+pre .c {
+    color: var(--code-muted);
+}
+
+pre .file {
+    display: block;
+    color: var(--code-muted);
+    margin-bottom: 0.6rem;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0 0 1.5rem;
+    font-size: 1rem;
+}
+
+th,
+td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.6rem 0.8rem 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+th {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+/* Layout */
+
+.skip {
+    position: absolute;
+    left: -999px;
+}
+
+.skip:focus {
+    left: 1rem;
+    top: 1rem;
+    background: var(--paper);
+    padding: 0.5rem 1rem;
+    z-index: 10;
+}
+
+.masthead {
+    border-bottom: 1px solid var(--line);
+}
+
+.masthead-inner,
+.page {
+    max-width: 76rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.masthead-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.brand {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.masthead nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    font-size: 1rem;
+}
+
+.masthead nav a {
+    white-space: nowrap;
+}
+
+.masthead nav a[aria-current='page'] {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@media (min-width: 64rem) {
+    .masthead-inner,
+    .page {
+        padding: 0 2rem;
+    }
+
+    .masthead-inner {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+}
+
+.layout {
+    display: block;
+}
+
+@media (min-width: 64rem) {
+    .layout {
+        display: grid;
+        grid-template-columns: 13rem minmax(0, 1fr);
+        gap: 4rem;
+    }
+}
+
+.contents {
+    display: none;
+}
+
+@media (min-width: 64rem) {
+    .contents {
+        display: block;
+        position: sticky;
+        top: 1.5rem;
+        align-self: start;
+        padding-top: 4rem;
+        font-size: 0.98rem;
+    }
+
+    .contents ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-left: 2px solid var(--line);
+    }
+
+    .contents li a {
+        display: block;
+        padding: 0.3rem 0 0.3rem 1rem;
+        margin-left: -2px;
+        border-left: 2px solid transparent;
+        color: var(--ink-soft);
+        text-decoration: none;
+    }
+
+    .contents li a:hover,
+    .contents li a.is-current {
+        color: var(--ink);
+        border-left-color: var(--turf);
+    }
+}
+
+main section {
+    padding: 4rem 0 1rem;
+}
+
+main section + section {
+    border-top: 1px solid var(--line);
+}
+
+.lede {
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 60ch;
+}
+
+.source {
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    padding-left: 0.9rem;
+    border-left: 3px solid var(--turf-soft);
+}
+
+.source a {
+    font-family: var(--mono);
+    font-size: 0.88em;
+}
+
+figure {
+    margin: 0 0 1.5rem;
+}
+
+figure img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 1rem;
+}
+
+figcaption {
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    margin-top: 0.6rem;
+    max-width: var(--measure);
+}
+
+footer {
+    border-top: 1px solid var(--line);
+    margin-top: 4rem;
+    padding: 2rem 0 3rem;
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+}
+
+/* Hero: the team sheet */
+
+.hero {
+    padding: 3.5rem 0 3rem;
+}
+
+.hero h1 {
+    max-width: 16ch;
+    margin-bottom: 1.25rem;
+}
+
+.sheet {
+    margin-top: 2.5rem;
+    background: var(--turf);
+    color: #f2f7f3;
+    border-radius: var(--radius-m);
+    padding: 1.25rem;
+    /* Chalk halfway line and centre circle, drawn faintly behind the sheet */
+    background-image:
+        radial-gradient(
+            circle at 50% 50%,
+            transparent 4.6rem,
+            rgba(255, 255, 255, 0.13) 4.6rem,
+            rgba(255, 255, 255, 0.13) calc(4.6rem + 2px),
+            transparent calc(4.6rem + 2px)
+        ),
+        linear-gradient(
+            90deg,
+            transparent calc(50% - 1px),
+            rgba(255, 255, 255, 0.13) calc(50% - 1px),
+            rgba(255, 255, 255, 0.13) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+}
+
+@media (prefers-color-scheme: dark) {
+    .sheet {
+        background-color: #173f2c;
+    }
+}
+
+@media (min-width: 48rem) {
+    .sheet {
+        padding: 1.75rem 2rem 2rem;
+    }
+}
+
+.sheet-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    align-items: end;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.sheet-head h2 {
+    font-size: 1.7rem;
+    margin: 0;
+    color: #fff;
+}
+
+.clubs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.clubs button {
+    font: 600 1rem var(--display);
+    letter-spacing: 0.01em;
+    color: #f2f7f3;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+}
+
+.clubs button[aria-pressed='true'] {
+    background: #fff;
+    color: var(--ink);
+    border-color: #fff;
+}
+
+.tiles {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: 0.6rem;
+}
+
+/* Seven modules: four and three reads better than six and a straggler */
+@media (min-width: 56rem) {
+    .tiles {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.tile {
+    position: relative;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    border-radius: var(--radius-m);
+    padding: 0.8rem 0.9rem 0.7rem;
+    min-height: 7.4rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1.1;
+}
+
+.tile-deps {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    line-height: 1.35;
+    margin: 0.2rem 0 0.6rem;
+}
+
+.tile-state {
+    margin-top: auto;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.tile-remove {
+    margin-top: 0.4rem;
+    align-self: start;
+    font: 500 0.85rem var(--body);
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.tile.is-enabled {
+    background: var(--bib);
+    border-color: var(--bib);
+    color: var(--bib-ink);
+}
+
+.tile.is-uninstalled {
+    background: transparent;
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.tile.is-uninstalled .tile-name {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .tile {
+        transition:
+            background-color 160ms ease,
+            border-color 160ms ease,
+            color 160ms ease;
+    }
+}
+
+.sheet-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 1.1rem;
+    font-size: 0.98rem;
+}
+
+.sheet-foot p {
+    margin: 0;
+    max-width: 62ch;
+}
+
+.sheet-foot button {
+    font: 600 0.95rem var(--body);
+    color: #fff;
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+    padding: 0;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    font-size: 0.9rem;
+    margin-top: 0.9rem;
+    opacity: 0.9;
+}
+
+.legend span::before {
+    content: '';
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 3px;
+    margin-right: 0.4rem;
+    vertical-align: -0.08rem;
+}
+
+.legend .l-enabled::before {
+    background: var(--bib);
+}
+
+.legend .l-off::before {
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+}
+
+.legend .l-gone::before {
+    border: 1.5px dashed rgba(255, 255, 255, 0.5);
+}
+
+/* Walkthrough */
+
+.steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+    counter-reset: step;
+}
+
+.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 2.5rem 0 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.steps > li:first-child {
+    border-top: 0;
+}
+
+.steps > li > h2::before {
+    content: counter(step);
+    display: inline-block;
+    min-width: 2.2rem;
+    color: var(--turf);
+}
+
+.callout {
+    background: var(--turf-soft);
+    border-radius: var(--radius-m);
+    padding: 1rem 1.2rem;
+    margin: 0 0 1.25rem;
+    max-width: var(--measure);
+}
+
+.callout p:last-child {
+    margin-bottom: 0;
+}

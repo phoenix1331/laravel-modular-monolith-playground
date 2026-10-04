@@ -43,8 +43,12 @@ fresh: ## Drop all tables, migrate and seed
 test: ## Run the test suite
 	@$(EXEC) php artisan test
 
+# laravel-vite-plugin refuses to start a dev server when CI=true. Vitest needs
+# one (it also supplies the @/ alias), so the check is bypassed for tests only
+VITEST = env LARAVEL_BYPASS_ENV_CHECK=1 npx vp test run
+
 test-js: ## Run frontend unit tests (vite-plus / Vitest)
-	@$(EXEC) npx vp test run
+	@$(EXEC) $(VITEST)
 
 lint: ## Fix code style with Pint
 	@$(EXEC) ./vendor/bin/pint
@@ -79,7 +83,7 @@ check: ## Run every quality gate: style, static analysis, PHP and JS boundaries,
 	@$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 	@$(MAKE) --no-print-directory deptrac
 	@$(EXEC) npm run types:check
-	@$(EXEC) npx vp test run
+	@$(EXEC) $(VITEST)
 	@$(EXEC) php artisan test
 
 build-check: ## Verify the production build compiles, then remove it so dev keeps using Vite

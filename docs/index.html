@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Modular monolith playground</title>
+        <meta
+            name="description"
+            content="A Laravel 13 and Vue 3 modular monolith for grassroots sports clubs: feature modules switch on per club and can be deleted without breaking anything, with boundaries enforced by Deptrac, Pest and ESLint."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="assets/site.css" />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e5a3f'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M16 3v26' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E"
+        />
+        <script src="assets/team-sheet.js" defer></script>
+        <script src="assets/contents.js" defer></script>
+    </head>
+    <body>
+        <a class="skip" href="#main">Skip to content</a>
+
+        <header class="masthead">
+            <div class="masthead-inner">
+                <a class="brand" href="./">Modular monolith playground</a>
+                <nav aria-label="Site">
+                    <a href="./" aria-current="page">How it works</a>
+                    <a href="add-a-module.html">Add a module</a>
+                    <a
+                        href="https://github.com/phoenix1331/laravel-modular-monolith-playground"
+                        >Source on GitHub</a
+                    >
+                </nav>
+            </div>
+        </header>
+
+        <div class="page">
+            <section class="hero" aria-labelledby="title">
+                <h1 id="title">
+                    Modules a club can switch on, and a codebase can lose
+                </h1>
+                <p class="lede">
+                    A Laravel 13 and Vue 3 app for grassroots sports clubs.
+                    Fixtures, kit orders, safeguarding certificates and the rest
+                    are separate modules. Each club turns on the ones it needs,
+                    and any module can be deleted from the repository without
+                    breaking the others. Deptrac, Pest and ESLint fail the build
+                    if one module reaches into another.
+                </p>
+
+                <div class="sheet" data-team-sheet>
+                    <div class="sheet-head">
+                        <h2>Try it: four clubs, seven modules</h2>
+                        <div
+                            class="clubs"
+                            role="group"
+                            aria-label="Choose a club"
+                        ></div>
+                    </div>
+                    <ul class="tiles" aria-label="Modules"></ul>
+                    <div class="legend" aria-hidden="true">
+                        <span class="l-enabled">Enabled for this club</span>
+                        <span class="l-off">Installed, switched off</span>
+                        <span class="l-gone">Not installed</span>
+                    </div>
+                    <div class="sheet-foot">
+                        <p data-status aria-live="polite">
+                            Pick a club to see what it has switched on.
+                            Uninstall a module to take it out of the codebase
+                            for everyone.
+                        </p>
+                        <button type="button" data-reset hidden>
+                            Install everything again
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="layout">
+                <nav class="contents" aria-label="On this page">
+                    <ul>
+                        <li><a href="#core">Core knows nothing</a></li>
+                        <li>
+                            <a href="#installed-enabled"
+                                >Installed vs enabled</a
+                            >
+                        </li>
+                        <li><a href="#contracts">Contracts vs internals</a></li>
+                        <li><a href="#deptrac">Deptrac layers</a></li>
+                        <li>
+                            <a href="#dependencies"
+                                >Hard and soft dependencies</a
+                            >
+                        </li>
+                        <li><a href="#graph">The module graph</a></li>
+                        <li><a href="#frontend">Frontend boundaries</a></li>
+                        <li><a href="#proof">Proving it</a></li>
+                    </ul>
+                </nav>
+
+                <main id="main">
+                    <section id="core" aria-labelledby="core-title">
+                        <h2 id="core-title">
+                            Core knows nothing about modules
+                        </h2>
+                        <p>
+                            The app is split in two.
+                            <strong>Core</strong> (<code>app/</code>) holds what
+                            every club has: organisations, users and roles,
+                            teams, players, feature flags, the module registry
+                            and the audit log.
+                            <strong>Modules</strong>
+                            (<code>modules/{Name}/</code>) hold everything a
+                            club might not want.
+                        </p>
+                        <p>
+                            The rule that makes the rest work: Core never
+                            imports a module class. Not in a controller, not in
+                            a seeder, not in a test. Modules depend on Core;
+                            Core depends on nothing but the framework. That is
+                            why a module folder can be deleted: nothing outside
+                            it mentions it by name.
+                        </p>
+                        <p>
+                            Core still has to find the modules. It reads a list
+                            of class names from
+                            <code>config/modules.php</code> and asks each one
+                            for its key, its dependencies, its service provider
+                            and its seeder. A class name in a config file is
+                            data, not a dependency.
+                        </p>
+                        <pre><code><span class="file">config/modules.php</span>'installed' => [
+    FixturesModule::class,
+    AvailabilityModule::class,
+    MatchReportsModule::class,
+    SubscriptionsModule::class,
+    KitShopModule::class,
+    ComplianceModule::class,
+    MessagingModule::class,
+],</code></pre>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Modules/ModuleRegistry.php"
+                                >app/Modules/ModuleRegistry.php</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Providers/ModulesServiceProvider.php"
+                                >app/Providers/ModulesServiceProvider.php</a
+                            >
+                        </p>
+                    </section>
+
+                    <section
+                        id="installed-enabled"
+                        aria-labelledby="installed-title"
+                    >
+                        <h2 id="installed-title">Installed is not enabled</h2>
+                        <p>
+                            Two different questions, answered in two different
+                            places. The team sheet above lets you try both.
+                        </p>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Installed</th>
+                                        <th scope="col">Enabled</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Means</th>
+                                        <td>
+                                            The module's code is part of this
+                                            deployment
+                                        </td>
+                                        <td>This club can use it</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Lives in</th>
+                                        <td><code>config/modules.php</code></td>
+                                        <td>
+                                            A Pennant flag,
+                                            <code>module:{key}</code>, scoped to
+                                            the organisation
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Changed by</th>
+                                        <td>A developer, in a commit</td>
+                                        <td>
+                                            The super admin, from the platform
+                                            dashboard
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">When it is off</th>
+                                        <td>
+                                            No provider, routes, migrations,
+                                            listeners or seeders
+                                        </td>
+                                        <td>
+                                            Routes return 404, the menu hides
+                                            it, data stays put
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>
+                            A disabled module answers <code>404</code>, not
+                            <code>403</code>: for that club it should look like
+                            it does not exist. Every module route gets the
+                            <code>module:{key}</code>
+                            middleware from the base provider, so no module can
+                            forget it. Switching a module off only flips the
+                            flag, so turning it back on brings everything back.
+                        </p>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Modules/ModuleManager.php"
+                                >app/Modules/ModuleManager.php</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Http/Middleware/EnsureModuleEnabled.php"
+                                >app/Http/Middleware/EnsureModuleEnabled.php</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Modules/ModuleServiceProvider.php"
+                                >app/Modules/ModuleServiceProvider.php</a
+                            >
+                        </p>
+                    </section>
+
+                    <section id="contracts" aria-labelledby="contracts-title">
+                        <h2 id="contracts-title">
+                            Contracts are public, everything else is private
+                        </h2>
+                        <p>
+                            Every module has the same shape. One folder,
+                            <code>Contracts/</code>, is its public surface:
+                            interfaces, read-only data objects and events that
+                            other modules may use. The rest of the module is
+                            private to it.
+                        </p>
+                        <pre><code>modules/Fixtures/
+  Contracts/                  <span class="c">public: FixtureLookup, FixtureData, Events/FixtureScheduled</span>
+  Actions/  Database/  Http/  Lookup/  Models/  Policies/  Queries/
+  Routes/web.php
+  Tests/                      <span class="c">only run while the module is installed</span>
+  FixturesModule.php          <span class="c">key, name, hard and soft dependencies, seeder</span>
+  FixturesServiceProvider.php <span class="c">binds FixtureLookup to its Eloquent implementation</span></code></pre>
+                        <p>
+                            Availability needs to know about fixtures, but it
+                            never touches the
+                            <code>Fixture</code> model. It type-hints
+                            <code>FixtureLookup</code> and gets back
+                            <code>FixtureData</code> objects. Fixtures can
+                            change its tables, its model, even its storage, and
+                            Availability will not notice.
+                        </p>
+                        <p>
+                            The same thinking reaches the database.
+                            <code>availability_responses.fixture_id</code> has
+                            no foreign key: a constraint would tie
+                            Availability's schema to Fixtures' table, which is
+                            exactly the coupling the contract exists to avoid.
+                            Module tables carry the module key as a prefix
+                            (<code>fixtures_fixtures</code>,
+                            <code>kit_shop_orders</code>) so ownership is
+                            obvious.
+                        </p>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/tree/main/modules/Fixtures/Contracts"
+                                >modules/Fixtures/Contracts/</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/modules/README.md"
+                                >modules/README.md</a
+                            >
+                        </p>
+                    </section>
+
+                    <section id="deptrac" aria-labelledby="deptrac-title">
+                        <h2 id="deptrac-title">
+                            Deptrac turns the rules into a failing build
+                        </h2>
+                        <p>
+                            A convention that lives in a README gets broken on
+                            the first busy Friday. Deptrac reads every class,
+                            sorts it into a <strong>layer</strong>, and checks
+                            every dependency (imports, type hints,
+                            <code>new</code>, static calls, attributes) against
+                            a <strong>ruleset</strong>. A dependency is allowed
+                            only if its target layer is listed.
+                        </p>
+                        <p>
+                            Each module gets two layers, one for its internals
+                            and one for its contracts:
+                        </p>
+                        <pre><code><span class="file">deptrac.yaml</span>- name: Availability
+  collectors:
+      - type: classLike
+        value: ^Modules\\Availability\\(?!Contracts\\).*   <span class="c"># everything except Contracts</span>
+- name: AvailabilityContracts
+  collectors:
+      - type: classLike
+        value: ^Modules\\Availability\\Contracts\\.*</code></pre>
+                        <p>And the ruleset says who each layer may use:</p>
+                        <pre><code><span class="file">deptrac.yaml</span>Availability:
+    - Core
+    - Framework
+    - AvailabilityContracts
+    - FixturesContracts      <span class="c"># its hard dependency's public surface, nothing more</span>
+
+Core:
+    - Framework              <span class="c"># Core may not name a single module layer</span></code></pre>
+                        <p>
+                            Swap <code>FixturesContracts</code> for
+                            <code>Fixtures</code> and everything still compiles
+                            and runs. That one line is the boundary.
+                            <code>make deptrac</code> also runs with
+                            <code>--fail-on-uncovered</code> and
+                            <code>debug:unassigned</code>, so a class that
+                            belongs to no layer fails the build instead of
+                            slipping through unchecked.
+                        </p>
+                        <p>
+                            Deptrac cannot see everything. Pest arch tests cover
+                            the rest: no raw
+                            <code>DB::table()</code> queries (they skip the
+                            tenancy scope), no queries built in controllers, and
+                            no services resolved by string key.
+                        </p>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/deptrac.yaml"
+                                >deptrac.yaml</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/tests/Arch/ModulesTest.php"
+                                >tests/Arch/ModulesTest.php</a
+                            >
+                        </p>
+                    </section>
+
+                    <section id="dependencies" aria-labelledby="deps-title">
+                        <h2 id="deps-title">Hard and soft dependencies</h2>
+                        <p>
+                            Modules declare their dependencies by key, never by
+                            class, so a definition never imports another module.
+                        </p>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Hard</th>
+                                        <th scope="col">Soft</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Example</th>
+                                        <td>Availability needs Fixtures</td>
+                                        <td>
+                                            Kit Shop uses Subscriptions when it
+                                            is there
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Declared as</th>
+                                        <td>
+                                            <code
+                                                >hardDependencies():
+                                                ['fixtures']</code
+                                            >
+                                        </td>
+                                        <td>
+                                            <code
+                                                >softDependencies():
+                                                ['subscriptions']</code
+                                            >
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Enabling</th>
+                                        <td>
+                                            Blocked until the dependency is on
+                                            for that club
+                                        </td>
+                                        <td>Never blocked</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">
+                                            Uninstalling the other one
+                                        </th>
+                                        <td>
+                                            The app refuses to boot and names
+                                            both modules
+                                        </td>
+                                        <td>
+                                            Keeps working, with a sensible
+                                            default
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">How the code talks</th>
+                                        <td>
+                                            Through the dependency's
+                                            <code>Contracts/</code>
+                                        </td>
+                                        <td>
+                                            Through a Core capability, or by
+                                            listening to events
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3>Soft dependency through a capability</h3>
+                        <p>
+                            Kit Shop only sells to players who are paid up, but
+                            it must not import Subscriptions. So the question
+                            lives in Core, as an interface with a null answer
+                            that Core binds by default: everyone is paid up.
+                        </p>
+                        <pre><code><span class="file">app/Capabilities/MembershipStatus.php</span>interface MembershipStatus
+{
+    public function tracksMembership(): bool;
+
+    public function isPaidUp(int $playerId): bool;
+}</code></pre>
+                        <p>
+                            While Subscriptions is installed, its provider takes
+                            over the binding. On every resolve it checks whether
+                            the current club has Subscriptions switched on, and
+                            falls back to the null answer if not. Kit Shop asks
+                            the same question either way and never learns who
+                            answered.
+                        </p>
+                        <pre><code><span class="file">modules/Subscriptions/SubscriptionsServiceProvider.php</span>$this->app->bind(MembershipStatus::class, function ($app): MembershipStatus {
+    $organisation = $app->make(CurrentOrganisation::class)->get();
+
+    return $organisation !== null && $app->make(ModuleManager::class)->isEnabled($organisation, 'subscriptions')
+        ? $app->make(SubscriptionsMembershipStatus::class)
+        : new NullMembershipStatus;
+});</code></pre>
+
+                        <h3>Soft dependency through events</h3>
+                        <p>
+                            Messaging posts an announcement when a fixture is
+                            scheduled or a payment goes overdue. Fixtures and
+                            Subscriptions publish events from their
+                            <code>Contracts/</code> and have no idea anyone is
+                            listening. Messaging subscribes only to modules that
+                            are installed, and its listeners do nothing for
+                            clubs that have Messaging switched off.
+                        </p>
+                        <pre><code><span class="file">modules/Messaging/MessagingServiceProvider.php</span>if ($installed->has('fixtures')) {
+    Event::listen(FixtureScheduled::class, AnnounceFixture::class);
+}
+
+if ($installed->has('subscriptions')) {
+    Event::listen(PaymentOverdue::class, RemindOverduePayment::class);
+}</code></pre>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/app/Capabilities/NullMembershipStatus.php"
+                                >app/Capabilities/NullMembershipStatus.php</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/modules/KitShop/Actions/PlaceOrder.php"
+                                >modules/KitShop/Actions/PlaceOrder.php</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/modules/Messaging/Listeners/PostsForOrganisation.php"
+                                >modules/Messaging/Listeners/PostsForOrganisation.php</a
+                            >
+                        </p>
+                    </section>
+
+                    <section id="graph" aria-labelledby="graph-title">
+                        <h2 id="graph-title">The module graph</h2>
+                        <p>
+                            <code>make graph</code> asks Deptrac to draw every
+                            dependency it found between layers. It is drawn from
+                            the code, not by hand, so it cannot drift.
+                        </p>
+                        <figure>
+                            <img
+                                src="modules.png"
+                                alt="Deptrac dependency graph. Every module points at Core. Availability, Match Reports and Messaging point at FixturesContracts. Messaging and Subscriptions point at SubscriptionsContracts. Kit Shop points only at Core."
+                                width="1656"
+                                height="276"
+                                loading="lazy"
+                            />
+                            <figcaption>
+                                Arrows are dependencies, labelled with how many
+                                Deptrac counted. The Framework layer is hidden
+                                because everything uses it.
+                            </figcaption>
+                        </figure>
+                        <p>What to look for:</p>
+                        <ul>
+                            <li>
+                                Every arrow into another module lands on its
+                                <code>Contracts</code> box, never its internals.
+                            </li>
+                            <li>Core has arrows in and none out.</li>
+                            <li>
+                                Kit Shop has no arrow to Subscriptions at all.
+                                Its soft dependency goes through
+                                <code>MembershipStatus</code> in Core, so the
+                                graph shows it as independent, which it is.
+                            </li>
+                            <li>
+                                Availability and Match Reports sit side by side
+                                and cannot see each other.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section id="frontend" aria-labelledby="frontend-title">
+                        <h2 id="frontend-title">The same boundaries in Vue</h2>
+                        <p>
+                            Each module's frontend lives in
+                            <code>resources/js/modules/{key}/</code>. Its
+                            <code>index.ts</code> is the only file other code
+                            may import; pages and components are private. The
+                            menu is built from whichever
+                            <code>index.ts</code> files exist, filtered by the
+                            modules the club has enabled, using
+                            <code>import.meta.glob</code> so that Core's code
+                            never names a module.
+                        </p>
+                        <pre><code><span class="file">resources/js/modules/compliance/index.ts</span>export default defineModule({
+    key: 'compliance',
+    navigation: [
+        { title: 'Compliance', href: compliance.index(), icon: ShieldCheck },
+    ],
+});</code></pre>
+                        <p>
+                            <code>eslint-plugin-boundaries</code> enforces it. A
+                            module may import shared code, its own files and
+                            another module's <code>index.ts</code>. Wayfinder's
+                            generated route and controller helpers count as part
+                            of the module that owns them, so they are no back
+                            door. ESLint runs this one rule only; Oxlint handles
+                            everything else.
+                        </p>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/eslint.config.js"
+                                >eslint.config.js</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/resources/js/modules/registry.ts"
+                                >resources/js/modules/registry.ts</a
+                            >
+                        </p>
+                    </section>
+
+                    <section id="proof" aria-labelledby="proof-title">
+                        <h2 id="proof-title">Proving a module is detachable</h2>
+                        <p>
+                            "Can be deleted without breaking anything" is a
+                            claim, so the repository tests it.
+                            <code>make uninstall-check MODULE=Messaging</code>
+                            copies the project to a temporary folder, removes
+                            the module from <code>config/modules.php</code>,
+                            deletes its PHP and Vue folders, and runs every gate
+                            against what is left: the full Pest suite, Deptrac,
+                            ESLint, the type check and the frontend tests.
+                        </p>
+                        <pre><code>$ make uninstall-check MODULE=Messaging
+==> Uninstalling Messaging: removing it from config/modules.php
+==> Deleting modules/Messaging and resources/js/modules/messaging
+==> Pest: full suite
+==> Deptrac: module boundaries
+==> Frontend: module boundaries, type check and unit tests
+Messaging uninstalled and deleted: the rest of the application still passes every gate.</code></pre>
+                        <p>
+                            CI runs it for every module that can be removed on
+                            its own. Fixtures cannot: Availability and Match
+                            Reports depend on it, and the check says so up
+                            front.
+                        </p>
+                        <p>
+                            Running it the first time found a real leak: Kit
+                            Shop's tests assumed Subscriptions existed. A test
+                            that needs another module now skips when that module
+                            is missing, and the module's own tests keep running.
+                        </p>
+                        <p class="source">
+                            Read the source:
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/bin/uninstall-check"
+                                >bin/uninstall-check</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/.github/workflows/ci.yml"
+                                >.github/workflows/ci.yml</a
+                            >,
+                            <a
+                                href="https://github.com/phoenix1331/laravel-modular-monolith-playground/blob/main/tests/Pest.php"
+                                >tests/Pest.php</a
+                            >
+                        </p>
+                        <p>
+                            Ready to build one?
+                            <a href="add-a-module.html"
+                                >Add a module to this repository</a
+                            >.
+                        </p>
+                    </section>
+                </main>
+            </div>
+
+            <footer>
+                <p>
+                    Built with Laravel 13, Vue 3, Inertia, Pennant, Deptrac,
+                    Pest and eslint-plugin-boundaries.
+                    <a
+                        href="https://github.com/phoenix1331/laravel-modular-monolith-playground"
+                        >Source on GitHub</a
+                    >.
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>
