@@ -1,0 +1,126 @@
+# CI: every quality gate from `make check`, plus the uninstall check for each
+# module that can be removed on its own.
+#
+# The steps call the same Makefile targets used locally. Locally they run in
+# the app container; here `EXEC=` runs them straight on the runner, so a gate
+# is defined once and CI cannot drift from what developers run.
+#
+# A crossed module boundary fails the build three ways: Deptrac (PHP layers),
+# Pest arch tests (source scans) and ESLint (eslint-plugin-boundaries).
+
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    EXEC: ''
+
+jobs:
+    gates:
+        name: Quality gates
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, zip, pcntl, bcmath, pdo_sqlite
+                  coverage: none
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: '24'
+                  cache: npm
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --no-progress --prefer-dist
+
+            - name: Install npm dependencies
+              run: npm ci
+
+            - name: Prepare the application
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+
+            # Builds the assets the Inertia tests render with, and generates
+            # the Wayfinder route helpers (gitignored) that the type check,
+            # Oxlint and ESLint resolve imports through
+            - name: Build frontend
+              run: npm run build
+
+            - name: Pint
+              run: make lint-check
+
+            - name: Oxlint and formatting
+              run: make lint-ts
+
+            - name: Frontend boundaries (ESLint)
+              run: make lint-js
+
+            - name: PHPStan
+              run: make stan
+
+            - name: Deptrac
+              run: make deptrac
+
+            - name: Type check
+              run: make types
+
+            - name: Vitest
+              run: make test-js
+
+            - name: Pest
+              run: make test
+
+    uninstall:
+        name: Uninstall ${{ matrix.module }}
+        needs: gates
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            # Fixtures is absent on purpose: Availability and MatchReports
+            # hard-depend on it, so it cannot be removed on its own
+            matrix:
+                module:
+                    - Availability
+                    - MatchReports
+                    - Subscriptions
+                    - KitShop
+                    - Compliance
+                    - Messaging
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, zip, pcntl, bcmath, pdo_sqlite
+                  coverage: none
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: '24'
+                  cache: npm
+
+            - name: Install dependencies
+              run: |
+                  composer install --no-interaction --no-progress --prefer-dist
+                  npm ci
+
+            - name: Prepare the application
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+                  npm run build
+
+            - name: Delete ${{ matrix.module }} and run every gate
+              run: make uninstall-check MODULE=${{ matrix.module }}

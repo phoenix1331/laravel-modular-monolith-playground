@@ -1,8 +1,10 @@
 .DEFAULT_GOAL := help
 
-EXEC = docker compose exec app
+# Where commands run. Locally, inside the app container. CI already has PHP
+# and Node on the runner, so it calls the same targets with `make test EXEC=`
+EXEC ?= docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js stan types deptrac graph check build-check uninstall-check artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js lint-ts stan types deptrac graph check build-check uninstall-check artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -52,6 +54,9 @@ lint-check: ## Check code style with Pint without changing files
 
 lint-js: ## Check frontend module boundaries with ESLint (eslint-plugin-boundaries)
 	@$(EXEC) npx eslint resources/js
+
+lint-ts: ## Lint and format-check TypeScript and Vue with Oxlint (vp check)
+	@$(EXEC) npx vp check
 
 stan: ## Run PHPStan (Larastan) static analysis
 	@$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G

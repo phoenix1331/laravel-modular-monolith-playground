@@ -36,7 +36,9 @@
 
         @fonts
 
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+        {{-- Same lookup as the resolver in app.ts: a Core page, else a module page (fixtures/pages/Index lives in resources/js/modules) --}}
+        @php($pageEntry = file_exists(resource_path("js/pages/{$page['component']}.vue")) ? "resources/js/pages/{$page['component']}.vue" : "resources/js/modules/{$page['component']}.vue")
+        @vite(['resources/css/app.css', 'resources/js/app.ts', $pageEntry])
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
