@@ -206,3 +206,40 @@ deptrac:
 
         MessagingContracts:
             - Framework
+
+    # Module graph: `make graph` renders docs/modules.png with the Graphviz
+    # formatter. Each arrow is a real dependency found in the code, so the
+    # picture cannot drift from what the ruleset enforces.
+    #
+    # Framework is hidden: everything depends on it, and drawing those edges
+    # buries the ones that matter. Each module's two layers are grouped so it
+    # reads as one box, with its Contracts beside its internals. A new module
+    # adds its pair here alongside its layers and ruleset entries.
+    formatters:
+        graphviz:
+            hidden_layers:
+                - Framework
+            groups:
+                Core:
+                    - Core
+                Fixtures:
+                    - Fixtures
+                    - FixturesContracts
+                Availability:
+                    - Availability
+                    - AvailabilityContracts
+                MatchReports:
+                    - MatchReports
+                    - MatchReportsContracts
+                Subscriptions:
+                    - Subscriptions
+                    - SubscriptionsContracts
+                KitShop:
+                    - KitShop
+                    - KitShopContracts
+                Compliance:
+                    - Compliance
+                    - ComplianceContracts
+                Messaging:
+                    - Messaging
+                    - MessagingContracts
