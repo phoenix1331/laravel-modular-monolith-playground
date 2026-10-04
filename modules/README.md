@@ -25,7 +25,7 @@ modules/{Name}/
 3. Add the definition class to `config/modules.php`
 4. `php artisan modules:list` confirms it is installed
 
-5. Frontend: `resources/js/modules/{key}/index.ts` default-exports `defineModule({ key, navigation })` from `@/lib/modules`. Its links appear only while the module is enabled for the club
+5. Frontend: `resources/js/modules/{key}/index.ts` (the only file other modules may import) default-exports `defineModule({ key, navigation })` from `@/lib/modules`. Its links appear only while the module is enabled for the club
 6. Pages go in `resources/js/modules/{key}/pages/` and are rendered by their path under `resources/js/modules`, e.g. `Inertia::render('fixtures/pages/Index')`
 
 A missing hard dependency or a dependency cycle stops the application booting with a message naming the modules involved.
@@ -43,14 +43,15 @@ A soft dependency goes through a **capability**: an interface in `app/Capabiliti
 
 ## Rules
 
-| Rule                                                                                    | Enforced by                                                                                                    |
-| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Only `Contracts/` is public. Other modules never reference anything else in this folder | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`) and Pest arch (`tests/Arch/ModulesTest.php`) |
-| Every class belongs to a layer                                                          | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`)                                                  |
-| Installed is not enabled                                                                | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled                            |
-| No raw `DB::table()` style queries: they skip the tenancy scope                         | Pest source scan (`tests/Arch/ModulesTest.php`)                                                                |
-| Controllers do not build queries; reads go through `Queries/` classes                   | Pest source scan                                                                                               |
-| Services resolved by class, never by string key                                         | Pest source scan                                                                                               |
+| Rule                                                                                     | Enforced by                                                                                                    |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Only `Contracts/` is public. Other modules never reference anything else in this folder  | Deptrac (`{Name}` and `{Name}Contracts` layers in `deptrac.yaml`) and Pest arch (`tests/Arch/ModulesTest.php`) |
+| Every class belongs to a layer                                                           | `make deptrac` (`--fail-on-uncovered` and `debug:unassigned`)                                                  |
+| Installed is not enabled                                                                 | Listed in `config/modules.php` = installed. Per-organisation Pennant flag = enabled                            |
+| No raw `DB::table()` style queries: they skip the tenancy scope                          | Pest source scan (`tests/Arch/ModulesTest.php`)                                                                |
+| Controllers do not build queries; reads go through `Queries/` classes                    | Pest source scan                                                                                               |
+| Services resolved by class, never by string key                                          | Pest source scan                                                                                               |
+| Frontend: a module imports shared code, its own files and other modules' `index.ts` only | `eslint-plugin-boundaries` (`eslint.config.js`, `make lint-js`, pre-commit hook)                               |
 
 ## Uninstalling a module
 

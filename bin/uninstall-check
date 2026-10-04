@@ -14,7 +14,7 @@
 #   3. Delete modules/{Name}/ and resources/js/modules/{key}/ (detach)
 #   4. Rebuild the autoloader and the generated Wayfinder route helpers
 #   5. Run every gate against what is left: the full Pest suite, Deptrac,
-#      the frontend type check and the frontend unit tests
+#      the ESLint boundaries check, the frontend type check and unit tests
 #
 # If anything outside the module still referenced it, step 5 fails and names
 # the file. A module that other installed modules hard-depend on cannot be
@@ -112,7 +112,8 @@ php artisan test --compact
 step "Deptrac: module boundaries"
 ./vendor/bin/deptrac analyse --fail-on-uncovered --no-progress --cache-file="$WORK/.deptrac.cache"
 
-step "Frontend: type check and unit tests"
+step "Frontend: module boundaries, type check and unit tests"
+npx eslint resources/js
 npm run --silent types:check
 npx vp test run
 

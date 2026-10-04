@@ -7,6 +7,13 @@ if ! ./vendor/bin/pint --test; then
   exit 1
 fi
 
+# Frontend module boundaries (eslint-plugin-boundaries, see eslint.config.js)
+echo "running eslint boundaries..."
+if ! npx eslint resources/js; then
+  echo "error: a frontend module boundary was crossed. see eslint.config.js."
+  exit 1
+fi
+
 # Security audit via osv-scanner CLI
 if ! command -v osv-scanner > /dev/null 2>&1; then
   echo "error: osv-scanner not found. install it: https://github.com/google/osv-scanner"

@@ -2,7 +2,7 @@
 
 EXEC = docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check stan types deptrac check build-check uninstall-check artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check lint-js stan types deptrac check build-check uninstall-check artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -50,6 +50,9 @@ lint: ## Fix code style with Pint
 lint-check: ## Check code style with Pint without changing files
 	@$(EXEC) ./vendor/bin/pint --test
 
+lint-js: ## Check frontend module boundaries with ESLint (eslint-plugin-boundaries)
+	@$(EXEC) npx eslint resources/js
+
 stan: ## Run PHPStan (Larastan) static analysis
 	@$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G
 
@@ -60,9 +63,10 @@ deptrac: ## Check module boundaries (fails on violations, uncovered dependencies
 	@$(EXEC) ./vendor/bin/deptrac analyse --fail-on-uncovered --no-progress
 	@$(EXEC) ./vendor/bin/deptrac debug:unassigned
 
-check: ## Run every quality gate: style, static analysis, boundaries, types, tests
+check: ## Run every quality gate: style, static analysis, PHP and JS boundaries, types, tests
 	@$(EXEC) ./vendor/bin/pint --test
 	@$(EXEC) npx vp check
+	@$(EXEC) npx eslint resources/js
 	@$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 	@$(MAKE) --no-print-directory deptrac
 	@$(EXEC) npm run types:check
