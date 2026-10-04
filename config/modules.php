@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Modules\Availability\AvailabilityModule;
 use Modules\Fixtures\FixturesModule;
 use Modules\MatchReports\MatchReportsModule;
+use Modules\Subscriptions\SubscriptionsModule;
 
 return [
 
@@ -29,6 +30,7 @@ return [
         FixturesModule::class,
         AvailabilityModule::class,
         MatchReportsModule::class,
+        SubscriptionsModule::class,
     ],
 
 ];

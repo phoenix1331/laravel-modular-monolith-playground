@@ -83,6 +83,17 @@ deptrac:
               - type: classLike
                 value: ^Modules\\MatchReports\\Contracts\\.*
 
+        # Subscriptions: no dependencies. Its Contracts publish the
+        # PaymentOverdue event that Messaging listens to.
+        - name: Subscriptions
+          collectors:
+              - type: classLike
+                value: ^Modules\\Subscriptions\\(?!Contracts\\).*
+        - name: SubscriptionsContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\Subscriptions\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -124,4 +135,12 @@ deptrac:
             - FixturesContracts
 
         MatchReportsContracts:
+            - Framework
+
+        Subscriptions:
+            - Core
+            - Framework
+            - SubscriptionsContracts
+
+        SubscriptionsContracts:
             - Framework

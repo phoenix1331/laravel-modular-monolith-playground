@@ -294,3 +294,38 @@ X-XSRF-TOKEN: {{xsrf}}
         { "player_id": 2, "goals": 1, "rating": 7 }
     ]
 }
+
+### Subscriptions module (admins only; 404 unless enabled)
+
+# Fees with totals. status: due (default) | overdue | paid | all
+GET {{baseUrl}}/subscriptions?status=overdue
+Accept: text/html
+
+###
+
+# Charge every player in a team. amount is in pounds and stored in pence.
+POST {{baseUrl}}/subscriptions/fees
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "team_id": 1,
+    "description": "2026/27 season subs",
+    "amount": "120.00",
+    "due_on": "2026-11-01"
+}
+
+###
+
+# Take a payment through the fake gateway. A declined charge returns a "payment" error.
+POST {{baseUrl}}/subscriptions/fees/1/pay
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+###
+
+# Remove an unpaid fee.
+DELETE {{baseUrl}}/subscriptions/fees/2
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
