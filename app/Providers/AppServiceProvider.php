@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Capabilities\MembershipStatus;
+use App\Capabilities\NullMembershipStatus;
 use App\Tenancy\CurrentOrganisation;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\DevCommands;
@@ -21,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // One instance per request or queued job, so an organisation set for one job never leaks into the next
         $this->app->scoped(CurrentOrganisation::class);
+
+        // Capability defaults. A module providing the capability rebinds it in
+        // its own provider, which Core registers after this one
+        $this->app->bind(MembershipStatus::class, NullMembershipStatus::class);
     }
 
     /**

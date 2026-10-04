@@ -30,6 +30,17 @@ modules/{Name}/
 
 A missing hard dependency or a dependency cycle stops the application booting with a message naming the modules involved.
 
+## Hard and soft dependencies
+
+|                              | Hard                                                                    | Soft                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Declared                     | `hardDependencies(): ['fixtures']`                                      | `softDependencies(): ['subscriptions']`                                       |
+| Enabling                     | Blocked until the dependency is enabled                                 | Never blocked                                                                 |
+| How code talks               | Uses the dependency's `Contracts/` (Deptrac allows `FixturesContracts`) | Asks a Core capability (`App\Capabilities\*`); never imports the other module |
+| When the other module is off | Cannot happen                                                           | Core's null implementation answers, so the module keeps working               |
+
+A soft dependency goes through a **capability**: an interface in `app/Capabilities/` with a null implementation that Core binds by default. The providing module rebinds it in its provider with a closure that checks, on every resolve, whether it is enabled for the current club. See `MembershipStatus` and `SubscriptionsServiceProvider`.
+
 ## Rules
 
 | Rule                                                                                    | Enforced by                                                                                                    |
