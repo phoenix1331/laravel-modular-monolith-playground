@@ -329,3 +329,58 @@ X-XSRF-TOKEN: {{xsrf}}
 DELETE {{baseUrl}}/subscriptions/fees/2
 Accept: application/json
 X-XSRF-TOKEN: {{xsrf}}
+
+### Kit Shop module (soft dependency on Subscriptions)
+
+# Shop page: products with stock, players (flagged if subs are overdue when Subscriptions is on), recent orders.
+GET {{baseUrl}}/kit-shop
+Accept: text/html
+
+###
+
+# Place an order. Refused with an "order" error if the player has overdue subs (only when the club has Subscriptions) or stock is short.
+POST {{baseUrl}}/kit-shop/orders
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "player_id": 1,
+    "product_id": 1,
+    "size": "YS",
+    "quantity": 1
+}
+
+###
+
+# Mark an order handed out (admins only).
+POST {{baseUrl}}/kit-shop/orders/1/fulfil
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+###
+
+# Add a product with stock per size (admins only).
+POST {{baseUrl}}/kit-shop/products
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "name": "Home shirt",
+    "price": "25.00",
+    "stock": "YS=10, YM=12, YL=8"
+}
+
+###
+
+# Set stock for one size (admins only).
+PUT {{baseUrl}}/kit-shop/products/1/stock
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "size": "YL",
+    "quantity": 20
+}

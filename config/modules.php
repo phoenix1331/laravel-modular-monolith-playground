@@ -3,6 +3,7 @@
 declare(strict_types=1);
 use Modules\Availability\AvailabilityModule;
 use Modules\Fixtures\FixturesModule;
+use Modules\KitShop\KitShopModule;
 use Modules\MatchReports\MatchReportsModule;
 use Modules\Subscriptions\SubscriptionsModule;
 
@@ -31,6 +32,7 @@ return [
         AvailabilityModule::class,
         MatchReportsModule::class,
         SubscriptionsModule::class,
+        KitShopModule::class,
     ],
 
 ];

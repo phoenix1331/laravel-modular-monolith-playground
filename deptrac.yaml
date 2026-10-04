@@ -94,6 +94,18 @@ deptrac:
               - type: classLike
                 value: ^Modules\\Subscriptions\\Contracts\\.*
 
+        # KitShop: soft-depends on Subscriptions, yet has no Subscriptions
+        # layer in its ruleset. The membership check goes through Core's
+        # MembershipStatus capability, so there is nothing to allow.
+        - name: KitShop
+          collectors:
+              - type: classLike
+                value: ^Modules\\KitShop\\(?!Contracts\\).*
+        - name: KitShopContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\KitShop\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -143,4 +155,13 @@ deptrac:
             - SubscriptionsContracts
 
         SubscriptionsContracts:
+            - Framework
+
+        # No SubscriptionsContracts here: a soft dependency needs no edge
+        KitShop:
+            - Core
+            - Framework
+            - KitShopContracts
+
+        KitShopContracts:
             - Framework
