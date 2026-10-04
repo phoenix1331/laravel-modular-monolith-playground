@@ -2,11 +2,13 @@
 # module that can be removed on its own.
 #
 # The steps call the same Makefile targets used locally. Locally they run in
-# the app container; here `EXEC=` runs them straight on the runner, so a gate
-# is defined once and CI cannot drift from what developers run.
+# the app container; in the gates and uninstall jobs `EXEC=` runs them
+# straight on the runner, so a gate is defined once and CI cannot drift from
+# what developers run.
 #
 # The e2e job boots the real Docker stack, seeds the four clubs and checks
-# each admin's menu in a browser.
+# each admin's menu in a browser. There, artisan runs in the app container,
+# as it does locally.
 #
 # A crossed module boundary fails the build three ways: Deptrac (PHP layers),
 # Pest arch tests (source scans) and ESLint (eslint-plugin-boundaries).
@@ -22,13 +24,13 @@ concurrency:
     group: ci-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    EXEC: ''
-
 jobs:
     gates:
         name: Quality gates
         runs-on: ubuntu-latest
+        # PHP and Node are on the runner: run the Makefile targets directly
+        env:
+            EXEC: ''
         steps:
             - uses: actions/checkout@v7
 
@@ -88,6 +90,10 @@ jobs:
         name: Browser tests
         needs: gates
         runs-on: ubuntu-latest
+        # Unlike the other jobs, artisan runs inside the app container here,
+        # where the `mysql` host resolves. -T: there is no TTY in CI
+        env:
+            EXEC: docker compose exec -T app
         steps:
             - uses: actions/checkout@v7
 
@@ -144,6 +150,8 @@ jobs:
         name: Uninstall ${{ matrix.module }}
         needs: gates
         runs-on: ubuntu-latest
+        env:
+            EXEC: ''
         strategy:
             fail-fast: false
             # Fixtures is absent on purpose: Availability and MatchReports

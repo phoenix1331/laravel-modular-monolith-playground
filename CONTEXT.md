@@ -113,7 +113,7 @@ Module flags follow the brief and are enabled only for installed modules: Rivers
 - Fresh volume needs `migrate` before the queue worker stops logging missing-table errors
 - `make setup` is the first-run command: creates `.env`, `up --build --wait`, generates the key only if missing, `migrate:fresh --seed`, restarts the app. Tested from a fresh copy (about a minute)
 - `make check` runs every gate: Pint, `vp check`, ESLint boundaries, PHPStan, Deptrac (+ unassigned), vue-tsc, Vitest, Pest
-- `EXEC ?= docker compose exec app` in the Makefile: CI sets `EXEC=` so the same targets run directly on the runner
+- `EXEC ?= docker compose exec app` in the Makefile: the CI gates and uninstall jobs set `EXEC=` so the same targets run directly on the runner; the e2e job sets `EXEC=docker compose exec -T app` because it seeds the real stack
 - `make e2e` runs Playwright in the `playwright` service (profile `e2e`) against the running stack; run `make fresh` first
 - `make uninstall-check MODULE={Name}` proves a module is detachable: in a temp copy it removes the config line, deletes `modules/{Name}` and `resources/js/modules/{key}`, regenerates Wayfinder, then runs Pest, Deptrac, vue-tsc and Vitest
 - The entrypoint deletes `public/build` and `public/hot` on boot. Without `public/hot`, Laravel silently serves a stale production build; with no build present it fails loudly instead. Use `make build-check` (builds, then deletes `public/build`) rather than leaving a build behind
