@@ -7,9 +7,18 @@ use App\Http\Controllers\Platform\OrganisationController;
 use App\Http\Controllers\Platform\OrganisationModuleController;
 use App\Http\Controllers\Teams\PlayerController;
 use App\Http\Controllers\Teams\TeamController;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+// No landing page: guests go to the login form, signed-in users to their own area
+Route::get('/', function (Request $request): RedirectResponse {
+    /** @var User|null $user */
+    $user = $request->user();
+
+    return $user === null ? to_route('login') : redirect($user->homeUrl());
+})->name('home');
 
 // Club area: admins and workers, always inside their own organisation
 Route::middleware(['auth', 'role:admin,worker'])->group(function () {

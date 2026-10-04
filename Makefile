@@ -2,7 +2,7 @@
 
 EXEC = docker compose exec app
 
-.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check stan types deptrac check artisan composer npm
+.PHONY: help up down build restart dev shell logs migrate seed fresh test test-js lint lint-check stan types deptrac check build-check artisan composer npm
 
 help: ## List available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -68,6 +68,10 @@ check: ## Run every quality gate: style, static analysis, boundaries, types, tes
 	@$(EXEC) npm run types:check
 	@$(EXEC) npx vp test run
 	@$(EXEC) php artisan test
+
+build-check: ## Verify the production build compiles, then remove it so dev keeps using Vite
+	@$(EXEC) npm run build
+	@rm -rf public/build
 
 artisan: ## Run an artisan command, e.g. make artisan cmd="route:list"
 	@$(EXEC) php artisan $(cmd)

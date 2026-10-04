@@ -10,4 +10,10 @@ if [ ! -d node_modules ]; then
     npm install
 fi
 
+# Development only: a leftover production build makes Laravel serve stale
+# JavaScript whenever public/hot is missing. Clearing both on boot means the
+# dev server always writes a fresh hot file, and a missing one fails loudly
+# ("Vite manifest not found") instead of showing an old UI.
+rm -rf public/build public/hot
+
 exec "$@"

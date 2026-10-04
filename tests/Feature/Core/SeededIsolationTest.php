@@ -53,11 +53,14 @@ test('club users cannot open any other club\'s team', function () {
 
 test('club admins only read their own club\'s audit trail', function () {
     User::where('role', Role::Admin)->get()->each(function (User $admin) {
+        // Seeding also records module toggles, so compare with the club's own entries rather than a fixed count
+        $ownEntries = AuditLog::where('organisation_id', $admin->organisation_id)->count();
+
         $this->actingAs($admin)
             ->get(route('audit.index'))
-            ->assertInertia(fn (Assert $page) => $page->has('entries.data', 1));
+            ->assertInertia(fn (Assert $page) => $page->has('entries.data', min($ownEntries, 25)));
 
-        expect(AuditLog::where('organisation_id', $admin->organisation_id)->sole()->event_data['marker'])
+        expect(AuditLog::where('organisation_id', $admin->organisation_id)->whereNotNull('event_data->marker')->sole()->event_data['marker'])
             ->toBe($admin->organisation->slug);
     });
 });

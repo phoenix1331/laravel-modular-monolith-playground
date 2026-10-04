@@ -9,6 +9,8 @@ use App\Models\Organisation;
 use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
+use App\Modules\ModuleManager;
+use App\Modules\ModuleRegistry;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -29,19 +31,26 @@ use Illuminate\Support\Facades\Hash;
  * Seeders run without model events, so tenancy auto-fill, write guards and
  * audit logging are off here. Every organisation_id is therefore set
  * explicitly.
+ *
+ * Module flags: each club lists the modules the brief gives it, by key.
+ * Only the ones currently installed are enabled, dependencies first, through
+ * ModuleManager so the same rules apply as in the dashboard. Installing a
+ * module later enables it here automatically; uninstalling one simply skips
+ * it, so seeding never depends on a particular module existing.
  */
 class ClubSeeder extends Seeder
 {
     /**
-     * @var list<array{name: string, slug: string, domain: string, admin: string, workers: list<string>, teams: list<array{name: string, age_group: string, ages: array{int, int}, coaches: list<int>}>}>
+     * @var list<array{name: string, slug: string, domain: string, admin: string, workers: list<string>, modules: list<string>, teams: list<array{name: string, age_group: string, ages: array{int, int}, coaches: list<int>}>}>
      */
-    private const array CLUBS = [
+    public const array CLUBS = [
         [
             'name' => 'Riverside Juniors FC',
             'slug' => 'riverside-juniors-fc',
             'domain' => 'riverside.test',
             'admin' => 'Helen Marsh',
             'workers' => ['Tom Okafor', 'Priya Shah', 'Gareth Lewis'],
+            'modules' => ['fixtures', 'availability', 'match-reports', 'subscriptions', 'kit-shop', 'compliance', 'messaging'],
             'teams' => [
                 ['name' => 'U9 Foxes', 'age_group' => 'U9', 'ages' => [8, 9], 'coaches' => [0]],
                 ['name' => 'U11 Badgers', 'age_group' => 'U11', 'ages' => [10, 11], 'coaches' => [0, 1]],
@@ -55,6 +64,7 @@ class ClubSeeder extends Seeder
             'domain' => 'dockside.test',
             'admin' => 'Steve Doyle',
             'workers' => ['Kemi Adeyemi', 'Liam Walsh'],
+            'modules' => ['fixtures', 'availability', 'match-reports'],
             'teams' => [
                 ['name' => 'First Team', 'age_group' => 'Seniors', 'ages' => [19, 34], 'coaches' => [0]],
                 ['name' => 'Reserves', 'age_group' => 'Seniors', 'ages' => [18, 30], 'coaches' => [1]],
@@ -66,6 +76,7 @@ class ClubSeeder extends Seeder
             'domain' => 'hillcrest.test',
             'admin' => 'Rachel Price',
             'workers' => ['Amira Hassan', 'Jo Bennett'],
+            'modules' => ['fixtures', 'subscriptions'],
             'teams' => [
                 ['name' => 'Ladies First XI', 'age_group' => 'Seniors', 'ages' => [18, 35], 'coaches' => [0]],
                 ['name' => 'U16 Girls', 'age_group' => 'U16', 'ages' => [15, 16], 'coaches' => [1]],
@@ -77,6 +88,7 @@ class ClubSeeder extends Seeder
             'domain' => 'valley.test',
             'admin' => 'Brian Hughes',
             'workers' => ['Malcolm Reid', 'Pat Connolly'],
+            'modules' => [],
             'teams' => [
                 ['name' => 'Over 50s', 'age_group' => 'O50', 'ages' => [50, 59], 'coaches' => [0]],
                 ['name' => 'Over 60s', 'age_group' => 'O60', 'ages' => [60, 74], 'coaches' => [1]],
@@ -114,6 +126,22 @@ class ClubSeeder extends Seeder
                 $team->workers()->attach(array_map(fn (int $index) => $workers[$index]->id, $teamData['coaches']));
 
                 $this->players($team, $teamData['ages']);
+            }
+
+            $this->enableModules($organisation, $club['modules']);
+        }
+    }
+
+    /**
+     * @param  list<string>  $wanted
+     */
+    private function enableModules(Organisation $organisation, array $wanted): void
+    {
+        $modules = app(ModuleManager::class);
+
+        foreach (app(ModuleRegistry::class)->inDependencyOrder() as $module) {
+            if (in_array($module->key(), $wanted, true)) {
+                $modules->enable($organisation, $module->key());
             }
         }
     }
