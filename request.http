@@ -413,3 +413,30 @@ X-XSRF-TOKEN: {{xsrf}}
 DELETE {{baseUrl}}/compliance/certificates/1
 Accept: application/json
 X-XSRF-TOKEN: {{xsrf}}
+
+### Messaging module (soft dependency on Fixtures and Subscriptions events)
+
+# Noticeboard. Admins see everything; coaches see club-wide and their teams' posts, never admin-only notices.
+GET {{baseUrl}}/messages
+Accept: text/html
+
+###
+
+# Post an announcement. Omit team_id for club-wide (admins only); coaches must pick a team they coach.
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+    "team_id": 1,
+    "title": "Training moved to Thursday",
+    "body": "Same time, Riverside Park pitch 2."
+}
+
+###
+
+# Remove an announcement (author or admin).
+DELETE {{baseUrl}}/messages/1
+Accept: application/json
+X-XSRF-TOKEN: {{xsrf}}

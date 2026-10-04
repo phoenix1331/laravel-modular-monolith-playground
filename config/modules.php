@@ -6,6 +6,7 @@ use Modules\Compliance\ComplianceModule;
 use Modules\Fixtures\FixturesModule;
 use Modules\KitShop\KitShopModule;
 use Modules\MatchReports\MatchReportsModule;
+use Modules\Messaging\MessagingModule;
 use Modules\Subscriptions\SubscriptionsModule;
 
 return [
@@ -35,6 +36,7 @@ return [
         SubscriptionsModule::class,
         KitShopModule::class,
         ComplianceModule::class,
+        MessagingModule::class,
     ],
 
 ];

@@ -115,6 +115,17 @@ deptrac:
               - type: classLike
                 value: ^Modules\\Compliance\\Contracts\\.*
 
+        # Messaging: soft-depends on Fixtures and Subscriptions through their
+        # public events only.
+        - name: Messaging
+          collectors:
+              - type: classLike
+                value: ^Modules\\Messaging\\(?!Contracts\\).*
+        - name: MessagingContracts
+          collectors:
+              - type: classLike
+                value: ^Modules\\Messaging\\Contracts\\.*
+
     ruleset:
         # Core depends on the framework and nothing else. It never names a module
         # layer, which is what lets any module be deleted without touching Core.
@@ -181,4 +192,17 @@ deptrac:
             - ComplianceContracts
 
         ComplianceContracts:
+            - Framework
+
+        # Soft dependency through events: unlike KitShop's capability, here the
+        # module listens to other modules' published events, so their
+        # Contracts layers are allowed. Their internals never are.
+        Messaging:
+            - Core
+            - Framework
+            - MessagingContracts
+            - FixturesContracts
+            - SubscriptionsContracts
+
+        MessagingContracts:
             - Framework
