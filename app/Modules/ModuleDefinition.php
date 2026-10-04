@@ -66,7 +66,8 @@ abstract class ModuleDefinition
 
     /**
      * Demo data for `make fresh`, run after Core's seeders and after the
-     * seeders of this module's dependencies. Null when the module has none.
+     * seeders of this module's hard and installed soft dependencies. Null
+     * when the module has none.
      *
      * The seeder decides which clubs get data, usually only those with the
      * module enabled.

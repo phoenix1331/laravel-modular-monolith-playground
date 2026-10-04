@@ -23,8 +23,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Module demo data. Core only reads class names from the installed
-        // definitions, so an uninstalled module's seeder never runs
-        foreach (app(ModuleRegistry::class)->inDependencyOrder() as $module) {
+        // definitions, so an uninstalled module's seeder never runs. Seeding
+        // order also respects soft dependencies: KitShop's orders depend on
+        // who Subscriptions has marked overdue
+        foreach (app(ModuleRegistry::class)->inSeedingOrder() as $module) {
             if ($module->seeder() !== null) {
                 $this->call($module->seeder());
             }

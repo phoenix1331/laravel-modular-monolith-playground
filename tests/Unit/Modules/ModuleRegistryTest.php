@@ -97,6 +97,33 @@ test('dependency order puts every module after its hard dependencies', function 
         ->and(array_search('fixtures', $order))->toBeLessThan(array_search('availability', $order));
 });
 
+test('seeding order also puts installed soft dependencies first', function () {
+    $registry = new ModuleRegistry([
+        FakeModule::make('messaging', soft: ['fixtures', 'subscriptions']),
+        FakeModule::make('kit-shop', soft: ['subscriptions', 'not-installed']),
+        FakeModule::make('availability', hard: ['fixtures']),
+        FakeModule::make('subscriptions'),
+        FakeModule::make('fixtures'),
+    ]);
+
+    $order = keys($registry->inSeedingOrder());
+
+    expect($order)->toHaveCount(5)
+        ->and(array_search('subscriptions', $order))->toBeLessThan(array_search('kit-shop', $order))
+        ->and(array_search('subscriptions', $order))->toBeLessThan(array_search('messaging', $order))
+        ->and(array_search('fixtures', $order))->toBeLessThan(array_search('messaging', $order))
+        ->and(array_search('fixtures', $order))->toBeLessThan(array_search('availability', $order));
+});
+
+test('modules that soft-depend on each other still get a seeding order', function () {
+    $registry = new ModuleRegistry([
+        FakeModule::make('alpha', soft: ['beta']),
+        FakeModule::make('beta', soft: ['alpha']),
+    ]);
+
+    expect(keys($registry->inSeedingOrder()))->toBe(['beta', 'alpha']);
+});
+
 test('a class in config that is not a definition is rejected', function () {
     ModuleRegistry::fromClasses([stdClass::class]);
 })->throws(InvalidModuleConfiguration::class, 'is not a ModuleDefinition');

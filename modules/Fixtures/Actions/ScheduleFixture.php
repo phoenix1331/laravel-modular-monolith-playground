@@ -24,6 +24,10 @@ final class ScheduleFixture
     {
         $fixture = new Fixture($details);
         $fixture->team()->associate($team);
+        // The team decides the club. Set here rather than left to the tenancy
+        // auto-fill so seeders, which run without model events, can use this
+        // action and announce fixtures exactly as the controller does
+        $fixture->organisation_id = $team->organisation_id;
         $fixture->save();
 
         FixtureScheduled::dispatch($fixture->toData());

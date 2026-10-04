@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Fixtures;
 
 use App\Modules\ModuleDefinition;
+use Modules\Fixtures\Database\Seeders\FixturesSeeder;
 
 /**
  * Fixtures: matches, venues and kick-off times. The reference module: every
@@ -34,5 +35,10 @@ final class FixturesModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return FixturesServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return FixturesSeeder::class;
     }
 }

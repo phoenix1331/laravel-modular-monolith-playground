@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Messaging;
 
 use App\Modules\ModuleDefinition;
+use Modules\Messaging\Database\Seeders\MessagingSeeder;
 
 /**
  * Messaging: a club noticeboard that other modules' events can post to.
@@ -39,5 +40,10 @@ final class MessagingModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return MessagingServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return MessagingSeeder::class;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Subscriptions;
 
 use App\Modules\ModuleDefinition;
+use Modules\Subscriptions\Database\Seeders\SubscriptionsSeeder;
 
 /**
  * Subscriptions: membership fees per player, payments through a gateway, and
@@ -33,5 +34,10 @@ final class SubscriptionsModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return SubscriptionsServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return SubscriptionsSeeder::class;
     }
 }

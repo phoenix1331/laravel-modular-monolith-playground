@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\KitShop;
 
 use App\Modules\ModuleDefinition;
+use Modules\KitShop\Database\Seeders\KitShopSeeder;
 
 /**
  * KitShop: club kit, sizes, stock and orders for players.
@@ -39,5 +40,10 @@ final class KitShopModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return KitShopServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return KitShopSeeder::class;
     }
 }

@@ -17,6 +17,9 @@ use Modules\Messaging\Models\Announcement;
  * console command. The event's organisationId says which club it belongs
  * to, so the listener checks the flag for that club and writes inside
  * runAs(), never relying on whoever happens to be signed in.
+ *
+ * organisation_id is set explicitly as well: events also fire while seeding,
+ * when model events (and so the tenancy auto-fill) are switched off.
  */
 trait PostsForOrganisation
 {
@@ -31,6 +34,10 @@ trait PostsForOrganisation
             return;
         }
 
-        app(CurrentOrganisation::class)->runAs($organisation, fn () => Announcement::create($attributes));
+        app(CurrentOrganisation::class)->runAs($organisation, function () use ($organisation, $attributes): void {
+            $announcement = new Announcement($attributes);
+            $announcement->organisation_id = $organisation->id;
+            $announcement->save();
+        });
     }
 }

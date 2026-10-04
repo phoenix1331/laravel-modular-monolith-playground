@@ -145,6 +145,48 @@ final class ModuleRegistry
         return array_values($ordered);
     }
 
+    /**
+     * Every module after its hard dependencies and its installed soft ones.
+     * Used to run module seeders, so a module whose demo data reacts to a
+     * soft dependency (KitShop asking MembershipStatus who is paid up) sees
+     * that module's data, whatever order config/modules.php lists them in.
+     *
+     * Soft dependencies may point at each other, which is not an error. A
+     * module already on the current path is skipped instead of followed, so
+     * the loop is broken where it started instead of recursing forever.
+     *
+     * @return list<ModuleDefinition>
+     */
+    public function inSeedingOrder(): array
+    {
+        $ordered = [];
+        $visiting = [];
+
+        $visit = function (string $key) use (&$visit, &$ordered, &$visiting): void {
+            if (isset($ordered[$key]) || isset($visiting[$key])) {
+                return;
+            }
+
+            $visiting[$key] = true;
+
+            foreach ($this->modules[$key]->hardDependencies() as $dependency) {
+                $visit($dependency);
+            }
+
+            foreach ($this->installedSoftDependenciesOf($key) as $dependency) {
+                $visit($dependency->key());
+            }
+
+            $ordered[$key] = $this->modules[$key];
+        };
+
+        foreach (array_keys($this->modules) as $key) {
+            $visit($key);
+        }
+
+        return array_values($ordered);
+    }
+
     private function assertHardDependenciesInstalled(): void
     {
         foreach ($this->modules as $key => $module) {

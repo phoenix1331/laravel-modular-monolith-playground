@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Availability;
 
 use App\Modules\ModuleDefinition;
+use Modules\Availability\Database\Seeders\AvailabilitySeeder;
 
 /**
  * Availability: coaches record which players can make each fixture.
@@ -38,5 +39,10 @@ final class AvailabilityModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return AvailabilityServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return AvailabilitySeeder::class;
     }
 }

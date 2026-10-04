@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\MatchReports;
 
 use App\Modules\ModuleDefinition;
+use Modules\MatchReports\Database\Seeders\MatchReportsSeeder;
 
 /**
  * MatchReports: the score, who scored and how each player did, filed after a
@@ -38,5 +39,10 @@ final class MatchReportsModule extends ModuleDefinition
     public function serviceProvider(): string
     {
         return MatchReportsServiceProvider::class;
+    }
+
+    public function seeder(): string
+    {
+        return MatchReportsSeeder::class;
     }
 }
